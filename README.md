@@ -1,6 +1,6 @@
-# Premier University Event Management System
+# A University Event Management System
 
-Raw PHP and MySQL based university event management system for Premier University.
+Raw PHP and MySQL based website and dashboard system for managing university events.
 
 ## Features
 
@@ -8,6 +8,7 @@ Raw PHP and MySQL based university event management system for Premier Universit
 - Student profile update and password change
 - Student event dashboard and status tracking
 - Student event search, category filtering, and event detail pages
+- Public website pages for Home, Events, About, Contact, and Event Details
 - Admin login
 - Create university events
 - Create events with category, time, deadline, capacity, and image upload
@@ -62,6 +63,9 @@ Default connection values:
 
 - Home: `src/index.php`
 - Public event details: `src/event-details.php?id=EVENT_ID`
+- Public events catalog: `src/events.php`
+- About page: `src/about.php`
+- Contact page: `src/contact.php`
 - Student login: `src/student/login.php`
 - Student registration: `src/student/register.php`
 - Student dashboard: `src/student/dashboard.php`

@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS students (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    department VARCHAR(100) DEFAULT 'Premier University',
+    department VARCHAR(100) DEFAULT 'General',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -53,7 +53,7 @@ WHERE NOT EXISTS (
 );
 
 INSERT INTO events (title, description, image_path, category, event_date, event_time, registration_deadline, venue, capacity, created_by)
-SELECT 'Programming Contest', 'Inter-department problem solving contest for Premier University students.', 'assets/images/puc_logo.png', 'Competition', '2026-05-15', '10:00:00', '2026-05-12', 'Main Auditorium', 200, 1
+SELECT 'Programming Contest', 'Inter-department problem solving contest for university students.', 'assets/images/puc_logo.png', 'Competition', '2026-05-15', '10:00:00', '2026-05-12', 'Main Auditorium', 200, 1
 WHERE NOT EXISTS (
     SELECT 1 FROM events WHERE title = 'Programming Contest' AND event_date = '2026-05-15'
 );

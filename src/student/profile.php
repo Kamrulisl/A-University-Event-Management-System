@@ -109,7 +109,7 @@ $studentStmt->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Profile | Premier University</title>
+    <title>Student Profile | University Event Management System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="app-page">
@@ -117,9 +117,9 @@ $studentStmt->close();
         <aside class="sidebar">
             <div>
                 <div class="brand-row">
-                    <img src="../assets/images/puc_logo.png" alt="Premier University Logo" class="brand-logo">
+                    <img src="../assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
                     <div class="brand-copy">
-                        <strong>Premier University</strong>
+                        <strong>University Event Management System</strong>
                         <span>Student Event Portal</span>
                     </div>
                 </div>

@@ -33,22 +33,27 @@ $isDeadlineOpen = $event ? registrationDeadlineOpen($event['registration_deadlin
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $event ? e($event['title']) : 'Event Not Found'; ?> | Premier University</title>
+    <title><?= $event ? e($event['title']) : 'Event Not Found'; ?> | A University Event Management System</title>
     <link rel="stylesheet" href="student/style.css">
 </head>
-<body>
-    <header class="top-nav">
-        <div class="site-shell">
-            <div class="brand-row">
-                <img src="assets/images/puc_logo.png" alt="Premier University Logo" class="brand-logo">
+<body class="website-body">
+    <header class="site-header">
+        <div class="site-shell site-header-inner">
+            <a class="brand-row site-brand" href="index.php">
+                <img src="assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
                 <div class="brand-copy">
-                    <strong>Premier University</strong>
-                    <span>Event Management System</span>
+                    <strong>University Event Management System</strong>
+                    <span>Event details</span>
                 </div>
-            </div>
+            </a>
+            <nav class="site-menu" aria-label="Main navigation">
+                <a href="index.php">Home</a>
+                <a href="events.php">Events</a>
+                <a href="about.php">About</a>
+                <a href="contact.php">Contact</a>
+            </nav>
             <div class="nav-actions">
-                <a class="button-link ghost" href="index.php">Home</a>
-                <a class="button-link" href="student/login.php">Student Login</a>
+                <a class="button-link ghost" href="student/login.php">Student Login</a>
                 <a class="button-link secondary" href="admin/admin-login.php">Admin Panel</a>
             </div>
         </div>

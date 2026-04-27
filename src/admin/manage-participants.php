@@ -86,7 +86,7 @@ if ($participantStatsQuery) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Participants | Premier University</title>
+    <title>Manage Participants | University Event Management System</title>
     <link rel="stylesheet" href="../student/style.css">
 </head>
 <body class="app-page">
@@ -94,9 +94,9 @@ if ($participantStatsQuery) {
         <aside class="sidebar">
             <div>
                 <div class="brand-row">
-                    <img src="../assets/images/puc_logo.png" alt="Premier University Logo" class="brand-logo">
+                    <img src="../assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
                     <div class="brand-copy">
-                        <strong>Premier University</strong>
+                        <strong>University Event Management System</strong>
                         <span>Admin Event Control</span>
                     </div>
                 </div>

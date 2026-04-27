@@ -12,7 +12,7 @@ $messageType = 'error';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
-    $department = trim($_POST['department'] ?? 'Premier University');
+    $department = trim($_POST['department'] ?? 'General');
     $password = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirm_password'] ?? '';
 
@@ -57,16 +57,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Registration | Premier University</title>
+    <title>Student Registration | University Event Management System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="auth-page">
     <div class="auth-card">
         <div class="brand-block">
             <div class="brand-lockup">
-                <img src="../assets/images/puc_logo.png" alt="Premier University Logo" class="brand-logo">
+                <img src="../assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
                 <div>
-                    <p class="eyebrow">Premier University</p>
+                    <p class="eyebrow">University Event Management System</p>
                     <h1>Student Registration</h1>
                 </div>
             </div>
