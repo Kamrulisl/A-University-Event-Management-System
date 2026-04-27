@@ -16,7 +16,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirm_password'] ?? '';
 
-    if ($password !== $confirmPassword) {
+    if (!verifyCsrfToken()) {
+        $message = 'Invalid form request. Please try again.';
+    } elseif ($name === '' || $department === '') {
+        $message = 'Name and department are required.';
+    } elseif (!isValidEmail($email)) {
+        $message = 'Please enter a valid email address.';
+    } elseif (strlen($password) < 6) {
+        $message = 'Password must be at least 6 characters long.';
+    } elseif ($password !== $confirmPassword) {
         $message = 'Passwords do not match.';
     } else {
         $checkStmt = $conn->prepare('SELECT student_id FROM students WHERE email = ? LIMIT 1');
@@ -70,6 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="post" class="stack-form">
+            <?= csrfField(); ?>
             <div class="inline-grid">
                 <label>
                     <span>Full Name</span>
@@ -90,12 +99,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="inline-grid">
                 <label>
                     <span>Password</span>
-                    <input type="password" name="password" placeholder="Create password" required>
+                    <input type="password" name="password" placeholder="Create password" minlength="6" required>
                 </label>
 
                 <label>
                     <span>Confirm Password</span>
-                    <input type="password" name="confirm_password" placeholder="Repeat password" required>
+                    <input type="password" name="confirm_password" placeholder="Repeat password" minlength="6" required>
                 </label>
             </div>
 

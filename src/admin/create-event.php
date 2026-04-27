@@ -12,10 +12,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $venue = trim($_POST['venue'] ?? '');
     $capacity = (int) ($_POST['capacity'] ?? 0);
     $adminId = (int) $_SESSION['admin_id'];
-    $imagePath = storeEventImage($_FILES['event_image'] ?? [], __DIR__ . '/../assets/uploads', 'assets/uploads');
+    $imagePath = null;
+    $imageFile = $_FILES['event_image'] ?? [];
+    $hasImageUpload = isset($imageFile['error']) && (int) $imageFile['error'] !== UPLOAD_ERR_NO_FILE;
 
-    if ($capacity < 1 || $capacity > 500) {
+    if (!verifyCsrfToken()) {
+        $message = 'Invalid form request. Please try again.';
+    } elseif ($title === '' || $venue === '') {
+        $message = 'Title and venue are required.';
+    } elseif (!isValidDate($eventDate)) {
+        $message = 'Please select a valid event date.';
+    } elseif ($capacity < 1 || $capacity > 500) {
         $message = 'Capacity must be between 1 and 500.';
+    } elseif ($hasImageUpload && ($imagePath = storeEventImage($imageFile, __DIR__ . '/../assets/uploads', 'assets/uploads')) === null) {
+        $message = 'Event image must be a JPG, PNG, or WebP file up to 2 MB.';
     } else {
         $stmt = $conn->prepare(
             'INSERT INTO events (title, description, image_path, event_date, venue, capacity, created_by)
@@ -99,6 +109,7 @@ $eventList = $conn->query(
                         <p class="muted">Provide the core event details students need before registration.</p>
                     </div>
                     <form method="post" class="stack-form" enctype="multipart/form-data">
+                        <?= csrfField(); ?>
                         <label>
                             <span>Event Title</span>
                             <input type="text" name="title" placeholder="Programming Contest" required>
@@ -111,7 +122,7 @@ $eventList = $conn->query(
 
                         <label>
                             <span>Event Image</span>
-                            <input type="file" name="event_image" accept=".jpg,.jpeg,.png,.webp">
+                            <input type="file" name="event_image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
                         </label>
 
                         <div class="inline-grid">

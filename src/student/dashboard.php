@@ -9,36 +9,41 @@ $studentId = (int) $_SESSION['student_id'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
     $eventId = (int) $_POST['event_id'];
 
-    $capacityStmt = $conn->prepare(
-        'SELECT e.capacity,
-                (SELECT COUNT(*) FROM registrations r WHERE r.event_id = e.event_id AND r.status IN ("pending", "approved")) AS total_registered
-         FROM events e
-         WHERE e.event_id = ? LIMIT 1'
-    );
-    $capacityStmt->bind_param('i', $eventId);
-    $capacityStmt->execute();
-    $capacityData = $capacityStmt->get_result()->fetch_assoc();
-    $capacityStmt->close();
-
-    if (!$capacityData) {
-        $message = 'Event not found.';
-        $messageType = 'error';
-    } elseif ((int) $capacityData['total_registered'] >= (int) $capacityData['capacity']) {
-        $message = 'This event is already full.';
+    if (!verifyCsrfToken()) {
+        $message = 'Invalid form request. Please try again.';
         $messageType = 'error';
     } else {
-        $registerStmt = $conn->prepare('INSERT IGNORE INTO registrations (student_id, event_id) VALUES (?, ?)');
-        $registerStmt->bind_param('ii', $studentId, $eventId);
-        $registerStmt->execute();
+        $capacityStmt = $conn->prepare(
+            'SELECT e.capacity,
+                    (SELECT COUNT(*) FROM registrations r WHERE r.event_id = e.event_id AND r.status IN ("pending", "approved")) AS total_registered
+             FROM events e
+             WHERE e.event_id = ? LIMIT 1'
+        );
+        $capacityStmt->bind_param('i', $eventId);
+        $capacityStmt->execute();
+        $capacityData = $capacityStmt->get_result()->fetch_assoc();
+        $capacityStmt->close();
 
-        if ($registerStmt->affected_rows > 0) {
-            $message = 'Registration request submitted.';
-        } else {
-            $message = 'You already registered for this event.';
+        if (!$capacityData) {
+            $message = 'Event not found.';
             $messageType = 'error';
-        }
+        } elseif ((int) $capacityData['total_registered'] >= (int) $capacityData['capacity']) {
+            $message = 'This event is already full.';
+            $messageType = 'error';
+        } else {
+            $registerStmt = $conn->prepare('INSERT IGNORE INTO registrations (student_id, event_id) VALUES (?, ?)');
+            $registerStmt->bind_param('ii', $studentId, $eventId);
+            $registerStmt->execute();
 
-        $registerStmt->close();
+            if ($registerStmt->affected_rows > 0) {
+                $message = 'Registration request submitted.';
+            } else {
+                $message = 'You already registered for this event.';
+                $messageType = 'error';
+            }
+
+            $registerStmt->close();
+        }
     }
 }
 
@@ -234,6 +239,7 @@ $upcomingSummaryStmt->close();
                                         <span class="status-badge status-<?= e($myStatus); ?>"><?= e(ucfirst($myStatus)); ?></span>
                                     <?php elseif ($remaining > 0): ?>
                                         <form method="post">
+                                            <?= csrfField(); ?>
                                             <input type="hidden" name="event_id" value="<?= e((string) $event['event_id']); ?>">
                                             <button type="submit">Register Now</button>
                                         </form>

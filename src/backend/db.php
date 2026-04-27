@@ -63,6 +63,37 @@ function e(string $value): string
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
+function csrfToken(): string
+{
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+
+    return $_SESSION['csrf_token'];
+}
+
+function csrfField(): string
+{
+    return '<input type="hidden" name="csrf_token" value="' . e(csrfToken()) . '">';
+}
+
+function verifyCsrfToken(): bool
+{
+    $submittedToken = $_POST['csrf_token'] ?? '';
+    return is_string($submittedToken) && hash_equals(csrfToken(), $submittedToken);
+}
+
+function isValidEmail(string $email): bool
+{
+    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+}
+
+function isValidDate(string $date): bool
+{
+    $parsedDate = DateTime::createFromFormat('Y-m-d', $date);
+    return $parsedDate !== false && $parsedDate->format('Y-m-d') === $date;
+}
+
 function eventImageUrl(?string $path, string $prefix = ''): string
 {
     $cleanPath = trim((string) $path);
@@ -83,6 +114,21 @@ function storeEventImage(array $file, string $uploadDir, string $publicPrefix): 
         return null;
     }
 
+    if ((int) ($file['size'] ?? 0) > 2 * 1024 * 1024) {
+        return null;
+    }
+
+    $allowedMimeTypes = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+    ];
+    $detectedMime = mime_content_type($file['tmp_name']);
+
+    if (!isset($allowedMimeTypes[$detectedMime])) {
+        return null;
+    }
+
     $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
     $originalName = $file['name'] ?? '';
     $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
@@ -95,7 +141,8 @@ function storeEventImage(array $file, string $uploadDir, string $publicPrefix): 
         mkdir($uploadDir, 0775, true);
     }
 
-    $fileName = 'event_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
+    $safeExtension = $allowedMimeTypes[$detectedMime];
+    $fileName = 'event_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $safeExtension;
     $targetPath = rtrim($uploadDir, '/') . '/' . $fileName;
 
     if (!move_uploaded_file($file['tmp_name'], $targetPath)) {

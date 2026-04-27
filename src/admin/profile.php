@@ -9,42 +9,56 @@ $messageType = 'success';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
-    if ($action === 'profile') {
+    if (!verifyCsrfToken()) {
+        $message = 'Invalid form request. Please try again.';
+        $messageType = 'error';
+    } elseif ($action === 'profile') {
         $name = trim($_POST['name'] ?? '');
         $email = trim($_POST['email'] ?? '');
 
-        $checkStmt = $conn->prepare('SELECT admin_id FROM admins WHERE email = ? AND admin_id != ? LIMIT 1');
-        $checkStmt->bind_param('si', $email, $adminId);
-        $checkStmt->execute();
-        $existing = $checkStmt->get_result()->fetch_assoc();
-        $checkStmt->close();
-
-        if ($existing) {
-            $message = 'This email is already being used by another admin.';
+        if ($name === '') {
+            $message = 'Admin name is required.';
+            $messageType = 'error';
+        } elseif (!isValidEmail($email)) {
+            $message = 'Please enter a valid email address.';
             $messageType = 'error';
         } else {
-            $updateStmt = $conn->prepare('UPDATE admins SET name = ?, email = ? WHERE admin_id = ?');
-            $updateStmt->bind_param('ssi', $name, $email, $adminId);
+            $checkStmt = $conn->prepare('SELECT admin_id FROM admins WHERE email = ? AND admin_id != ? LIMIT 1');
+            $checkStmt->bind_param('si', $email, $adminId);
+            $checkStmt->execute();
+            $existing = $checkStmt->get_result()->fetch_assoc();
+            $checkStmt->close();
 
-            if ($updateStmt->execute()) {
-                $_SESSION['admin_name'] = $name;
-                $_SESSION['admin_email'] = $email;
-                $message = 'Admin profile updated successfully.';
-            } else {
-                $message = 'Admin profile update failed.';
+            if ($existing) {
+                $message = 'This email is already being used by another admin.';
                 $messageType = 'error';
-            }
+            } else {
+                $updateStmt = $conn->prepare('UPDATE admins SET name = ?, email = ? WHERE admin_id = ?');
+                $updateStmt->bind_param('ssi', $name, $email, $adminId);
 
-            $updateStmt->close();
+                if ($updateStmt->execute()) {
+                    $_SESSION['admin_name'] = $name;
+                    $_SESSION['admin_email'] = $email;
+                    $message = 'Admin profile updated successfully.';
+                } else {
+                    $message = 'Admin profile update failed.';
+                    $messageType = 'error';
+                }
+
+                $updateStmt->close();
+            }
         }
     }
 
-    if ($action === 'password') {
+    if ($action === 'password' && $messageType !== 'error') {
         $currentPassword = $_POST['current_password'] ?? '';
         $newPassword = $_POST['new_password'] ?? '';
         $confirmPassword = $_POST['confirm_password'] ?? '';
 
-        if ($newPassword !== $confirmPassword) {
+        if (strlen($newPassword) < 6) {
+            $message = 'New password must be at least 6 characters long.';
+            $messageType = 'error';
+        } elseif ($newPassword !== $confirmPassword) {
             $message = 'New password and confirm password do not match.';
             $messageType = 'error';
         } else {
@@ -163,6 +177,7 @@ $adminStmt->close();
                         <h2>Profile Information</h2>
                     </div>
                     <form method="post" class="stack-form">
+                        <?= csrfField(); ?>
                         <input type="hidden" name="action" value="profile">
                         <label>
                             <span>Admin Name</span>
@@ -181,6 +196,7 @@ $adminStmt->close();
                         <h2>Change Password</h2>
                     </div>
                     <form method="post" class="stack-form">
+                        <?= csrfField(); ?>
                         <input type="hidden" name="action" value="password">
                         <label>
                             <span>Current Password</span>
@@ -188,11 +204,11 @@ $adminStmt->close();
                         </label>
                         <label>
                             <span>New Password</span>
-                            <input type="password" name="new_password" required>
+                            <input type="password" name="new_password" minlength="6" required>
                         </label>
                         <label>
                             <span>Confirm New Password</span>
-                            <input type="password" name="confirm_password" required>
+                            <input type="password" name="confirm_password" minlength="6" required>
                         </label>
                         <button type="submit">Update Password</button>
                     </form>

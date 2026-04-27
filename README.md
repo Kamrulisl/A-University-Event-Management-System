@@ -15,6 +15,9 @@ Raw PHP and MySQL based university event management system for Premier Universit
 - Admin approval or rejection of participants
 - Admin profile update and password change
 - Dashboard summaries for admins and students
+- CSRF protection for login, registration, profile, event, and approval forms
+- Server-side validation for emails, passwords, dates, capacities, and uploads
+- Event image upload support for JPG, PNG, and WebP files up to 2 MB
 
 ## Tech Stack
 
@@ -22,6 +25,13 @@ Raw PHP and MySQL based university event management system for Premier Universit
 - MySQL
 - HTML
 - CSS
+
+## Security Notes
+
+- Passwords are stored with PHP `password_hash()`
+- Login regenerates the session ID after successful authentication
+- Form submissions include CSRF tokens to reduce forged request risk
+- Event uploads are checked by file size, extension, and detected MIME type
 
 ## Project Entry
 

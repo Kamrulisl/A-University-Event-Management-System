@@ -9,7 +9,10 @@ $editEvent = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
-    if ($action === 'delete_event') {
+    if (!verifyCsrfToken()) {
+        $message = 'Invalid form request. Please try again.';
+        $messageType = 'error';
+    } elseif ($action === 'delete_event') {
         $eventId = (int) ($_POST['event_id'] ?? 0);
         $deleteStmt = $conn->prepare('DELETE FROM events WHERE event_id = ?');
         $deleteStmt->bind_param('i', $eventId);
@@ -24,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $deleteStmt->close();
     }
 
-    if ($action === 'update_event') {
+    if ($action === 'update_event' && $messageType !== 'error') {
         $eventId = (int) ($_POST['event_id'] ?? 0);
         $title = trim($_POST['title'] ?? '');
         $description = trim($_POST['description'] ?? '');
@@ -32,11 +35,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $venue = trim($_POST['venue'] ?? '');
         $capacity = (int) ($_POST['capacity'] ?? 0);
         $currentImagePath = trim($_POST['current_image_path'] ?? '');
-        $newImagePath = storeEventImage($_FILES['event_image'] ?? [], __DIR__ . '/../assets/uploads', 'assets/uploads');
+        $imageFile = $_FILES['event_image'] ?? [];
+        $hasImageUpload = isset($imageFile['error']) && (int) $imageFile['error'] !== UPLOAD_ERR_NO_FILE;
+        $newImagePath = $hasImageUpload ? storeEventImage($imageFile, __DIR__ . '/../assets/uploads', 'assets/uploads') : null;
         $imagePath = $newImagePath ?? $currentImagePath;
 
-        if ($capacity < 1 || $capacity > 500) {
+        if ($title === '' || $venue === '') {
+            $message = 'Title and venue are required.';
+            $messageType = 'error';
+        } elseif (!isValidDate($eventDate)) {
+            $message = 'Please select a valid event date.';
+            $messageType = 'error';
+        } elseif ($capacity < 1 || $capacity > 500) {
             $message = 'Capacity must be between 1 and 500.';
+            $messageType = 'error';
+        } elseif ($hasImageUpload && $newImagePath === null) {
+            $message = 'Event image must be a JPG, PNG, or WebP file up to 2 MB.';
             $messageType = 'error';
         } else {
             $updateStmt = $conn->prepare(
@@ -132,6 +146,7 @@ $events = $conn->query(
                         <p class="muted">Update the selected event and save the revised information.</p>
                     </div>
                     <form method="post" class="stack-form" enctype="multipart/form-data">
+                        <?= csrfField(); ?>
                         <input type="hidden" name="action" value="update_event">
                         <input type="hidden" name="event_id" value="<?= e((string) $editEvent['event_id']); ?>">
                         <input type="hidden" name="current_image_path" value="<?= e((string) ($editEvent['image_path'] ?? '')); ?>">
@@ -159,7 +174,7 @@ $events = $conn->query(
                         </label>
                         <label>
                             <span>Change Event Image</span>
-                            <input type="file" name="event_image" accept=".jpg,.jpeg,.png,.webp">
+                            <input type="file" name="event_image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
                         </label>
                         <div class="event-thumb medium-thumb">
                             <img src="<?= eventImageUrl($editEvent['image_path'] ?? null, '../'); ?>" alt="<?= e($editEvent['title']); ?>">
@@ -198,6 +213,7 @@ $events = $conn->query(
                                     <div class="table-actions">
                                         <a class="button-link ghost small-btn" href="manage-events.php?edit=<?= e((string) $event['event_id']); ?>">Edit</a>
                                         <form method="post" class="mini-form">
+                                            <?= csrfField(); ?>
                                             <input type="hidden" name="action" value="delete_event">
                                             <input type="hidden" name="event_id" value="<?= e((string) $event['event_id']); ?>">
                                             <button type="submit" class="small-btn danger-btn">Delete</button>

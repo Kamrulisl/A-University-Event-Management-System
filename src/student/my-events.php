@@ -10,7 +10,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $registrationId = (int) ($_POST['registration_id'] ?? 0);
 
-    if ($action === 'cancel_registration') {
+    if (!verifyCsrfToken()) {
+        $message = 'Invalid form request. Please try again.';
+        $messageType = 'error';
+    } elseif ($action === 'cancel_registration') {
         $cancelStmt = $conn->prepare(
             'DELETE FROM registrations
              WHERE registration_id = ? AND student_id = ? AND status = "pending"'
@@ -175,6 +178,7 @@ $studentSummaryStmt->close();
                                         <span class="status-badge status-<?= e($registration['status']); ?>"><?= e(ucfirst($registration['status'])); ?></span>
                                         <?php if ($registration['status'] === 'pending'): ?>
                                             <form method="post" class="mini-form">
+                                                <?= csrfField(); ?>
                                                 <input type="hidden" name="action" value="cancel_registration">
                                                 <input type="hidden" name="registration_id" value="<?= e((string) $registration['registration_id']); ?>">
                                                 <button type="submit" class="small-btn danger-btn">Cancel Request</button>

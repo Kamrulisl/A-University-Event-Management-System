@@ -13,23 +13,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    $stmt = $conn->prepare('SELECT student_id, name, email, password FROM students WHERE email = ? LIMIT 1');
-    $stmt->bind_param('s', $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $student = $result->fetch_assoc();
-    $stmt->close();
+    if (!verifyCsrfToken()) {
+        $message = 'Invalid form request. Please try again.';
+    } elseif (!isValidEmail($email)) {
+        $message = 'Please enter a valid email address.';
+    } else {
+        $stmt = $conn->prepare('SELECT student_id, name, email, password FROM students WHERE email = ? LIMIT 1');
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $student = $result->fetch_assoc();
+        $stmt->close();
 
-    if ($student && password_verify($password, $student['password'])) {
-        $_SESSION['student_id'] = (int) $student['student_id'];
-        $_SESSION['student_name'] = $student['name'];
-        $_SESSION['student_email'] = $student['email'];
+        if ($student && password_verify($password, $student['password'])) {
+            session_regenerate_id(true);
+            $_SESSION['student_id'] = (int) $student['student_id'];
+            $_SESSION['student_name'] = $student['name'];
+            $_SESSION['student_email'] = $student['email'];
 
-        header('Location: dashboard.php');
-        exit;
+            header('Location: dashboard.php');
+            exit;
+        }
+
+        $message = 'Invalid email or password.';
     }
-
-    $message = 'Invalid email or password.';
 }
 ?>
 <!DOCTYPE html>
@@ -58,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="post" class="stack-form">
+            <?= csrfField(); ?>
             <label>
                 <span>Email Address</span>
                 <input type="email" name="email" placeholder="student@puc.ac.bd" required>

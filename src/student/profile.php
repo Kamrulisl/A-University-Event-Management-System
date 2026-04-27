@@ -9,43 +9,57 @@ $messageType = 'success';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
-    if ($action === 'profile') {
+    if (!verifyCsrfToken()) {
+        $message = 'Invalid form request. Please try again.';
+        $messageType = 'error';
+    } elseif ($action === 'profile') {
         $name = trim($_POST['name'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $department = trim($_POST['department'] ?? '');
 
-        $checkStmt = $conn->prepare('SELECT student_id FROM students WHERE email = ? AND student_id != ? LIMIT 1');
-        $checkStmt->bind_param('si', $email, $studentId);
-        $checkStmt->execute();
-        $existing = $checkStmt->get_result()->fetch_assoc();
-        $checkStmt->close();
-
-        if ($existing) {
-            $message = 'This email is already being used by another student.';
+        if ($name === '' || $department === '') {
+            $message = 'Name and department are required.';
+            $messageType = 'error';
+        } elseif (!isValidEmail($email)) {
+            $message = 'Please enter a valid email address.';
             $messageType = 'error';
         } else {
-            $updateStmt = $conn->prepare('UPDATE students SET name = ?, email = ?, department = ? WHERE student_id = ?');
-            $updateStmt->bind_param('sssi', $name, $email, $department, $studentId);
+            $checkStmt = $conn->prepare('SELECT student_id FROM students WHERE email = ? AND student_id != ? LIMIT 1');
+            $checkStmt->bind_param('si', $email, $studentId);
+            $checkStmt->execute();
+            $existing = $checkStmt->get_result()->fetch_assoc();
+            $checkStmt->close();
 
-            if ($updateStmt->execute()) {
-                $_SESSION['student_name'] = $name;
-                $_SESSION['student_email'] = $email;
-                $message = 'Profile updated successfully.';
-            } else {
-                $message = 'Profile update failed.';
+            if ($existing) {
+                $message = 'This email is already being used by another student.';
                 $messageType = 'error';
-            }
+            } else {
+                $updateStmt = $conn->prepare('UPDATE students SET name = ?, email = ?, department = ? WHERE student_id = ?');
+                $updateStmt->bind_param('sssi', $name, $email, $department, $studentId);
 
-            $updateStmt->close();
+                if ($updateStmt->execute()) {
+                    $_SESSION['student_name'] = $name;
+                    $_SESSION['student_email'] = $email;
+                    $message = 'Profile updated successfully.';
+                } else {
+                    $message = 'Profile update failed.';
+                    $messageType = 'error';
+                }
+
+                $updateStmt->close();
+            }
         }
     }
 
-    if ($action === 'password') {
+    if ($action === 'password' && $messageType !== 'error') {
         $currentPassword = $_POST['current_password'] ?? '';
         $newPassword = $_POST['new_password'] ?? '';
         $confirmPassword = $_POST['confirm_password'] ?? '';
 
-        if ($newPassword !== $confirmPassword) {
+        if (strlen($newPassword) < 6) {
+            $message = 'New password must be at least 6 characters long.';
+            $messageType = 'error';
+        } elseif ($newPassword !== $confirmPassword) {
             $message = 'New password and confirm password do not match.';
             $messageType = 'error';
         } else {
@@ -174,6 +188,7 @@ $studentStmt->close();
                         <p class="muted">Keep your basic student information up to date.</p>
                     </div>
                     <form method="post" class="stack-form">
+                        <?= csrfField(); ?>
                         <input type="hidden" name="action" value="profile">
                         <div class="inline-grid">
                             <label>
@@ -199,6 +214,7 @@ $studentStmt->close();
                         <p class="muted">Use your current password to set a new one.</p>
                     </div>
                     <form method="post" class="stack-form">
+                        <?= csrfField(); ?>
                         <input type="hidden" name="action" value="password">
                         <label>
                             <span>Current Password</span>
@@ -206,11 +222,11 @@ $studentStmt->close();
                         </label>
                         <label>
                             <span>New Password</span>
-                            <input type="password" name="new_password" required>
+                            <input type="password" name="new_password" minlength="6" required>
                         </label>
                         <label>
                             <span>Confirm New Password</span>
-                            <input type="password" name="confirm_password" required>
+                            <input type="password" name="confirm_password" minlength="6" required>
                         </label>
                         <button type="submit">Update Password</button>
                     </form>

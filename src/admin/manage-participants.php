@@ -9,19 +9,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $registrationId = (int) ($_POST['registration_id'] ?? 0);
     $status = $_POST['status'] ?? '';
 
-    if (in_array($status, ['approved', 'rejected'], true)) {
-        $stmt = $conn->prepare('UPDATE registrations SET status = ? WHERE registration_id = ?');
-        $stmt->bind_param('si', $status, $registrationId);
-        $stmt->execute();
+    if (!verifyCsrfToken()) {
+        $message = 'Invalid form request. Please try again.';
+        $messageType = 'error';
+    } elseif (in_array($status, ['approved', 'rejected'], true)) {
+        if ($status === 'approved') {
+            $capacityStmt = $conn->prepare(
+                'SELECT e.capacity, reg.status AS current_status,
+                        (SELECT COUNT(*) FROM registrations r WHERE r.event_id = e.event_id AND r.status = "approved") AS approved_count
+                 FROM registrations reg
+                 INNER JOIN events e ON e.event_id = reg.event_id
+                 WHERE reg.registration_id = ? LIMIT 1'
+            );
+            $capacityStmt->bind_param('i', $registrationId);
+            $capacityStmt->execute();
+            $capacityData = $capacityStmt->get_result()->fetch_assoc();
+            $capacityStmt->close();
 
-        if ($stmt->affected_rows >= 0) {
-            $message = 'Participant status updated.';
-        } else {
-            $message = 'Unable to update participant status.';
-            $messageType = 'error';
+            if (!$capacityData) {
+                $message = 'Registration not found.';
+                $messageType = 'error';
+            } elseif ($capacityData['current_status'] !== 'approved' && (int) $capacityData['approved_count'] >= (int) $capacityData['capacity']) {
+                $message = 'This event is already at approved capacity.';
+                $messageType = 'error';
+            }
         }
 
-        $stmt->close();
+        if ($messageType !== 'error') {
+            $stmt = $conn->prepare('UPDATE registrations SET status = ? WHERE registration_id = ?');
+            $stmt->bind_param('si', $status, $registrationId);
+            $stmt->execute();
+
+            if ($stmt->affected_rows >= 0) {
+                $message = 'Participant status updated.';
+            } else {
+                $message = 'Unable to update participant status.';
+                $messageType = 'error';
+            }
+
+            $stmt->close();
+        }
     } else {
         $message = 'Invalid action requested.';
         $messageType = 'error';
@@ -164,11 +191,13 @@ if ($participantStatsQuery) {
                                         <td>
                                             <div class="action-group">
                                                 <form method="post">
+                                                    <?= csrfField(); ?>
                                                     <input type="hidden" name="registration_id" value="<?= e((string) $participant['registration_id']); ?>">
                                                     <input type="hidden" name="status" value="approved">
                                                     <button type="submit" class="small-btn">Approve</button>
                                                 </form>
                                                 <form method="post">
+                                                    <?= csrfField(); ?>
                                                     <input type="hidden" name="registration_id" value="<?= e((string) $participant['registration_id']); ?>">
                                                     <input type="hidden" name="status" value="rejected">
                                                     <button type="submit" class="small-btn secondary-btn">Reject</button>

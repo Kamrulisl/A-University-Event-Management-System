@@ -13,23 +13,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    $stmt = $conn->prepare('SELECT admin_id, name, email, password FROM admins WHERE email = ? LIMIT 1');
-    $stmt->bind_param('s', $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $admin = $result->fetch_assoc();
-    $stmt->close();
+    if (!verifyCsrfToken()) {
+        $message = 'Invalid form request. Please try again.';
+    } elseif (!isValidEmail($email)) {
+        $message = 'Please enter a valid email address.';
+    } else {
+        $stmt = $conn->prepare('SELECT admin_id, name, email, password FROM admins WHERE email = ? LIMIT 1');
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $admin = $result->fetch_assoc();
+        $stmt->close();
 
-    if ($admin && password_verify($password, $admin['password'])) {
-        $_SESSION['admin_id'] = (int) $admin['admin_id'];
-        $_SESSION['admin_name'] = $admin['name'];
-        $_SESSION['admin_email'] = $admin['email'];
+        if ($admin && password_verify($password, $admin['password'])) {
+            session_regenerate_id(true);
+            $_SESSION['admin_id'] = (int) $admin['admin_id'];
+            $_SESSION['admin_name'] = $admin['name'];
+            $_SESSION['admin_email'] = $admin['email'];
 
-        header('Location: admin-dashboard.php');
-        exit;
+            header('Location: admin-dashboard.php');
+            exit;
+        }
+
+        $message = 'Invalid admin credentials.';
     }
-
-    $message = 'Invalid admin credentials.';
 }
 ?>
 <!DOCTYPE html>
@@ -58,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="post" class="stack-form">
+            <?= csrfField(); ?>
             <label>
                 <span>Admin Email</span>
                 <input type="email" name="email" placeholder="admin@puc.ac.bd" required>
