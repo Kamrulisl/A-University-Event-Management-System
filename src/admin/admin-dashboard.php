@@ -3,6 +3,7 @@ require_once __DIR__ . '/../backend/db.php';
 requireAdminAuth();
 
 $stats = [
+    'clubs' => 0,
     'events' => 0,
     'students' => 0,
     'registrations' => 0,
@@ -10,6 +11,7 @@ $stats = [
 ];
 
 $statQueries = [
+    'clubs' => 'SELECT COUNT(*) AS total FROM clubs WHERE status = "active"',
     'events' => 'SELECT COUNT(*) AS total FROM events',
     'students' => 'SELECT COUNT(*) AS total FROM students',
     'registrations' => 'SELECT COUNT(*) AS total FROM registrations',
@@ -25,12 +27,13 @@ foreach ($statQueries as $key => $query) {
 
 $recentEvents = $conn->query(
     'SELECT e.event_id, e.title, e.image_path, e.category, e.event_date, e.event_time, e.registration_deadline,
-            e.venue, e.capacity,
+            e.venue, e.capacity, c.name AS club_name,
             COUNT(CASE WHEN r.status IN ("pending", "approved") THEN 1 END) AS total_registered
      FROM events e
+     LEFT JOIN clubs c ON c.club_id = e.club_id
      LEFT JOIN registrations r ON r.event_id = e.event_id
      GROUP BY e.event_id, e.title, e.image_path, e.category, e.event_date, e.event_time,
-              e.registration_deadline, e.venue, e.capacity
+              e.registration_deadline, e.venue, e.capacity, c.name
      ORDER BY event_date ASC
      LIMIT 5'
 );
@@ -57,7 +60,7 @@ $recentRegistrations = $conn->query(
         <aside class="sidebar">
             <div>
                 <div class="brand-row">
-                    <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
+                    <img src="../assets/images/puc_logo.png" alt="PUC Logo" class="brand-logo">
                     <div class="brand-copy">
                         <strong>University Club Event Management</strong>
                         <span>Admin Event Control</span>
@@ -75,6 +78,7 @@ $recentRegistrations = $conn->query(
             <div>
                 <nav class="nav-links">
                     <a href="admin-dashboard.php" class="active">Dashboard</a>
+                    <a href="manage-clubs.php">Clubs</a>
                     <a href="create-event.php">Create Event</a>
                     <a href="manage-events.php">Manage Events</a>
                     <a href="manage-students.php">Members</a>
@@ -101,12 +105,12 @@ $recentRegistrations = $conn->query(
 
             <section class="stats-grid">
                 <article class="stat-card">
-                    <span>Total Events</span>
-                    <strong><?= e((string) $stats['events']); ?></strong>
+                    <span>Active Clubs</span>
+                    <strong><?= e((string) $stats['clubs']); ?></strong>
                 </article>
                 <article class="stat-card">
-                    <span>Total Members</span>
-                    <strong><?= e((string) $stats['students']); ?></strong>
+                    <span>Total Events</span>
+                    <strong><?= e((string) $stats['events']); ?></strong>
                 </article>
                 <article class="stat-card">
                     <span>Registrations</span>
@@ -135,6 +139,7 @@ $recentRegistrations = $conn->query(
                                 <div class="event-body">
                                     <h3><?= e($event['title']); ?></h3>
                                     <div class="meta-list">
+                                        <span>Club: <?= e($event['club_name'] ?: 'Unassigned'); ?></span>
                                         <span>Category: <?= e($event['category']); ?></span>
                                         <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?><?= $event['event_time'] ? ' at ' . e(date('h:i A', strtotime($event['event_time']))) : ''; ?></span>
                                         <span>Venue: <?= e($event['venue']); ?></span>

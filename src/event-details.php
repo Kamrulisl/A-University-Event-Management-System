@@ -4,13 +4,14 @@ require_once __DIR__ . '/backend/db.php';
 $eventId = (int) ($_GET['id'] ?? 0);
 $eventStmt = $conn->prepare(
     'SELECT e.event_id, e.title, e.description, e.image_path, e.category, e.event_date, e.event_time,
-            e.registration_deadline, e.venue, e.capacity,
+            e.registration_deadline, e.venue, e.capacity, c.name AS club_name,
             COUNT(CASE WHEN r.status IN ("pending", "approved") THEN 1 END) AS total_registered
      FROM events e
+     LEFT JOIN clubs c ON c.club_id = e.club_id
      LEFT JOIN registrations r ON r.event_id = e.event_id
      WHERE e.event_id = ?
      GROUP BY e.event_id, e.title, e.description, e.image_path, e.category, e.event_date,
-              e.event_time, e.registration_deadline, e.venue, e.capacity
+              e.event_time, e.registration_deadline, e.venue, e.capacity, c.name
      LIMIT 1'
 );
 $eventStmt->bind_param('i', $eventId);
@@ -40,7 +41,7 @@ $isDeadlineOpen = $event ? registrationDeadlineOpen($event['registration_deadlin
     <header class="site-header">
         <div class="site-shell site-header-inner">
             <a class="brand-row site-brand" href="index.php">
-                <img src="assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
+                <img src="assets/images/puc_logo.png" alt="PUC Logo" class="brand-logo">
                 <div class="brand-copy">
                     <strong>University Club Event Management</strong>
                     <span>Event details</span>
@@ -48,6 +49,7 @@ $isDeadlineOpen = $event ? registrationDeadlineOpen($event['registration_deadlin
             </a>
             <nav class="site-menu" aria-label="Main navigation">
                 <a href="index.php">Home</a>
+                <a href="clubs.php">Clubs</a>
                 <a href="events.php">Events</a>
                 <a href="about.php">About</a>
                 <a href="contact.php">Contact</a>
@@ -78,6 +80,7 @@ $isDeadlineOpen = $event ? registrationDeadlineOpen($event['registration_deadlin
                     <h1><?= e($event['title']); ?></h1>
                     <p><?= e($event['description'] ?: 'No description has been added for this event yet.'); ?></p>
                     <div class="detail-facts">
+                        <span>Club: <?= e($event['club_name'] ?: 'Unassigned'); ?></span>
                         <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?></span>
                         <span>Time: <?= $event['event_time'] ? e(date('h:i A', strtotime($event['event_time']))) : 'TBA'; ?></span>
                         <span>Venue: <?= e($event['venue']); ?></span>

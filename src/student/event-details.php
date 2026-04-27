@@ -51,17 +51,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $eventId > 0) {
 
 $eventStmt = $conn->prepare(
     'SELECT e.event_id, e.title, e.description, e.image_path, e.category, e.event_date, e.event_time,
-            e.registration_deadline, e.venue, e.capacity, e.created_at,
+            e.registration_deadline, e.venue, e.capacity, e.created_at, c.name AS club_name,
             COUNT(CASE WHEN r.status IN ("pending", "approved") THEN 1 END) AS total_registered,
             SUM(CASE WHEN r.status = "approved" THEN 1 ELSE 0 END) AS approved_count,
             SUM(CASE WHEN r.status = "pending" THEN 1 ELSE 0 END) AS pending_count,
             MAX(CASE WHEN my.student_id IS NOT NULL THEN my.status ELSE NULL END) AS my_status
      FROM events e
+     LEFT JOIN clubs c ON c.club_id = e.club_id
      LEFT JOIN registrations r ON r.event_id = e.event_id
      LEFT JOIN registrations my ON my.event_id = e.event_id AND my.student_id = ?
      WHERE e.event_id = ?
      GROUP BY e.event_id, e.title, e.description, e.image_path, e.category, e.event_date,
-              e.event_time, e.registration_deadline, e.venue, e.capacity, e.created_at
+              e.event_time, e.registration_deadline, e.venue, e.capacity, e.created_at, c.name
      LIMIT 1'
 );
 $eventStmt->bind_param('ii', $studentId, $eventId);
@@ -92,7 +93,7 @@ $isDeadlineOpen = $event ? registrationDeadlineOpen($event['registration_deadlin
         <aside class="sidebar">
             <div>
                 <div class="brand-row">
-                    <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
+                    <img src="../assets/images/puc_logo.png" alt="PUC Logo" class="brand-logo">
                     <div class="brand-copy">
                         <strong>University Club Event Management</strong>
                         <span>Member Event Portal</span>
@@ -137,6 +138,7 @@ $isDeadlineOpen = $event ? registrationDeadlineOpen($event['registration_deadlin
                         <h1><?= e($event['title']); ?></h1>
                         <p><?= e($event['description'] ?: 'No description has been added for this event yet.'); ?></p>
                         <div class="detail-facts">
+                            <span>Club: <?= e($event['club_name'] ?: 'Unassigned'); ?></span>
                             <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?></span>
                             <span>Time: <?= $event['event_time'] ? e(date('h:i A', strtotime($event['event_time']))) : 'TBA'; ?></span>
                             <span>Venue: <?= e($event['venue']); ?></span>

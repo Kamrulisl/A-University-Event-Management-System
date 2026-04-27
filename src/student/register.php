@@ -64,7 +64,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     <main class="auth-shell register-auth">
         <section class="auth-showcase">
             <div class="brand-lockup">
-                <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo large-logo">
+                <img src="../assets/images/puc_logo.png" alt="PUC Logo" class="brand-logo large-logo">
                 <div>
                     <p class="eyebrow">Join the Portal</p>
                     <h1>Register once, join any approved club event.</h1>

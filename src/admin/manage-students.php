@@ -32,7 +32,7 @@ $studentSummary = $conn->query(
         <aside class="sidebar">
             <div>
                 <div class="brand-row">
-                    <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
+                    <img src="../assets/images/puc_logo.png" alt="PUC Logo" class="brand-logo">
                     <div class="brand-copy">
                         <strong>University Club Event Management</strong>
                         <span>Admin Event Control</span>
@@ -42,6 +42,7 @@ $studentSummary = $conn->query(
             <div>
                 <nav class="nav-links">
                     <a href="admin-dashboard.php">Dashboard</a>
+                    <a href="manage-clubs.php">Clubs</a>
                     <a href="create-event.php">Create Event</a>
                     <a href="manage-events.php">Manage Events</a>
                     <a href="manage-students.php" class="active">Members</a>

@@ -7,6 +7,7 @@ $messageType = 'error';
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $title = trim($_POST['title'] ?? '');
+    $clubId = (int) ($_POST['club_id'] ?? 0);
     $description = trim($_POST['description'] ?? '');
     $category = trim($_POST['category'] ?? 'General');
     $eventDate = $_POST['event_date'] ?? '';
@@ -23,6 +24,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $message = 'Invalid form request. Please try again.';
     } elseif ($title === '' || $venue === '') {
         $message = 'Title and venue are required.';
+    } elseif ($clubId < 1) {
+        $message = 'Please select the club responsible for this event.';
     } elseif ($category === '') {
         $message = 'Category is required.';
     } elseif (!isValidDate($eventDate)) {
@@ -39,13 +42,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $message = 'Event image must be a JPG, PNG, or WebP file up to 2 MB.';
     } else {
         $stmt = $conn->prepare(
-            'INSERT INTO events (title, description, image_path, category, event_date, event_time, registration_deadline, venue, capacity, created_by)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            'INSERT INTO events (club_id, title, description, image_path, category, event_date, event_time, registration_deadline, venue, capacity, created_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $eventTimeValue = $eventTime !== '' ? $eventTime : null;
         $deadlineValue = $registrationDeadline !== '' ? $registrationDeadline : null;
         $stmt->bind_param(
-            'ssssssssii',
+            'issssssssii',
+            $clubId,
             $title,
             $description,
             $imagePath,
@@ -70,9 +74,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 }
 
 $eventList = $conn->query(
-    'SELECT title, image_path, category, event_date, event_time, registration_deadline, venue, capacity
-     FROM events
-     ORDER BY event_date DESC'
+    'SELECT e.title, e.image_path, e.category, e.event_date, e.event_time, e.registration_deadline,
+            e.venue, e.capacity, c.name AS club_name
+     FROM events e
+     LEFT JOIN clubs c ON c.club_id = e.club_id
+     ORDER BY e.event_date DESC'
+);
+
+$clubs = $conn->query(
+    'SELECT club_id, name
+     FROM clubs
+     WHERE status = "active"
+     ORDER BY name ASC'
 );
 ?>
 <!DOCTYPE html>
@@ -88,7 +101,7 @@ $eventList = $conn->query(
         <aside class="sidebar">
             <div>
                 <div class="brand-row">
-                    <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
+                    <img src="../assets/images/puc_logo.png" alt="PUC Logo" class="brand-logo">
                     <div class="brand-copy">
                         <strong>University Club Event Management</strong>
                         <span>Admin Event Control</span>
@@ -99,6 +112,7 @@ $eventList = $conn->query(
             <div>
                 <nav class="nav-links">
                     <a href="admin-dashboard.php">Dashboard</a>
+                    <a href="manage-clubs.php">Clubs</a>
                     <a href="create-event.php" class="active">Create Event</a>
                     <a href="manage-events.php">Manage Events</a>
                     <a href="manage-students.php">Members</a>
@@ -139,6 +153,18 @@ $eventList = $conn->query(
                         <label>
                             <span>Event Title</span>
                             <input type="text" name="title" placeholder="Programming Contest" required>
+                        </label>
+
+                        <label>
+                            <span>Organizing Club</span>
+                            <select name="club_id" required>
+                                <option value="">Select club</option>
+                                <?php if ($clubs): ?>
+                                    <?php while ($club = $clubs->fetch_assoc()): ?>
+                                        <option value="<?= e((string) $club['club_id']); ?>"><?= e($club['name']); ?></option>
+                                    <?php endwhile; ?>
+                                <?php endif; ?>
+                            </select>
                         </label>
 
                         <label>
@@ -212,6 +238,7 @@ $eventList = $conn->query(
                                     </div>
                                     <div class="event-body">
                                         <strong><?= e($event['title']); ?></strong>
+                                        <span>Club: <?= e($event['club_name'] ?: 'Unassigned'); ?></span>
                                         <span><?= e($event['category']); ?> | <?= e(date('d M Y', strtotime($event['event_date']))); ?><?= $event['event_time'] ? ' at ' . e(date('h:i A', strtotime($event['event_time']))) : ''; ?></span>
                                         <span><?= e($event['venue']); ?><?= $event['registration_deadline'] ? ' | Deadline: ' . e(date('d M Y', strtotime($event['registration_deadline']))) : ''; ?></span>
                                         <span class="status-badge status-pending">Seats: <?= e((string) $event['capacity']); ?></span>

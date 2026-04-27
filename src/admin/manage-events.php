@@ -29,6 +29,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
     if ($action === 'update_event' && $messageType !== 'error') {
         $eventId = (int) ($_POST['event_id'] ?? 0);
+        $clubId = (int) ($_POST['club_id'] ?? 0);
         $title = trim($_POST['title'] ?? '');
         $description = trim($_POST['description'] ?? '');
         $category = trim($_POST['category'] ?? 'General');
@@ -45,6 +46,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
         if ($title === '' || $venue === '') {
             $message = 'Title and venue are required.';
+            $messageType = 'error';
+        } elseif ($clubId < 1) {
+            $message = 'Please select the organizing club.';
             $messageType = 'error';
         } elseif ($category === '') {
             $message = 'Category is required.';
@@ -70,13 +74,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         } else {
             $updateStmt = $conn->prepare(
                 'UPDATE events
-                 SET title = ?, description = ?, image_path = ?, category = ?, event_date = ?, event_time = ?, registration_deadline = ?, venue = ?, capacity = ?
+                 SET club_id = ?, title = ?, description = ?, image_path = ?, category = ?, event_date = ?, event_time = ?, registration_deadline = ?, venue = ?, capacity = ?
                  WHERE event_id = ?'
             );
             $eventTimeValue = $eventTime !== '' ? $eventTime : null;
             $deadlineValue = $registrationDeadline !== '' ? $registrationDeadline : null;
             $updateStmt->bind_param(
-                'ssssssssii',
+                'issssssssii',
+                $clubId,
                 $title,
                 $description,
                 $imagePath,
@@ -112,13 +117,21 @@ if (isset($_GET['edit'])) {
 
 $events = $conn->query(
     'SELECT e.event_id, e.title, e.description, e.image_path, e.category, e.event_date, e.event_time,
-            e.registration_deadline, e.venue, e.capacity,
+            e.registration_deadline, e.venue, e.capacity, c.name AS club_name,
             COUNT(r.registration_id) AS total_registrations
      FROM events e
+     LEFT JOIN clubs c ON c.club_id = e.club_id
      LEFT JOIN registrations r ON r.event_id = e.event_id
      GROUP BY e.event_id, e.title, e.description, e.image_path, e.category, e.event_date,
-              e.event_time, e.registration_deadline, e.venue, e.capacity
+              e.event_time, e.registration_deadline, e.venue, e.capacity, c.name
      ORDER BY e.event_date ASC'
+);
+
+$clubOptions = $conn->query(
+    'SELECT club_id, name
+     FROM clubs
+     WHERE status = "active"
+     ORDER BY name ASC'
 );
 ?>
 <!DOCTYPE html>
@@ -134,7 +147,7 @@ $events = $conn->query(
         <aside class="sidebar">
             <div>
                 <div class="brand-row">
-                    <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
+                    <img src="../assets/images/puc_logo.png" alt="PUC Logo" class="brand-logo">
                     <div class="brand-copy">
                         <strong>University Club Event Management</strong>
                         <span>Admin Event Control</span>
@@ -144,6 +157,7 @@ $events = $conn->query(
             <div>
                 <nav class="nav-links">
                     <a href="admin-dashboard.php">Dashboard</a>
+                    <a href="manage-clubs.php">Clubs</a>
                     <a href="create-event.php">Create Event</a>
                     <a href="manage-events.php" class="active">Manage Events</a>
                     <a href="manage-students.php">Members</a>
@@ -185,6 +199,18 @@ $events = $conn->query(
                         <label>
                             <span>Event Title</span>
                             <input type="text" name="title" value="<?= e($editEvent['title']); ?>" required>
+                        </label>
+                        <label>
+                            <span>Organizing Club</span>
+                            <select name="club_id" required>
+                                <option value="">Select club</option>
+                                <?php if ($clubOptions): ?>
+                                    <?php mysqli_data_seek($clubOptions, 0); ?>
+                                    <?php while ($club = $clubOptions->fetch_assoc()): ?>
+                                        <option value="<?= e((string) $club['club_id']); ?>" <?= (int) ($editEvent['club_id'] ?? 0) === (int) $club['club_id'] ? 'selected' : ''; ?>><?= e($club['name']); ?></option>
+                                    <?php endwhile; ?>
+                                <?php endif; ?>
+                            </select>
                         </label>
                         <label>
                             <span>Description</span>
@@ -255,6 +281,7 @@ $events = $conn->query(
                                     <h3><?= e($event['title']); ?></h3>
                                     <p><?= e($event['description'] ?: 'No description available yet.'); ?></p>
                                     <div class="meta-list">
+                                        <span>Club: <?= e($event['club_name'] ?: 'Unassigned'); ?></span>
                                         <span>Category: <?= e($event['category']); ?></span>
                                         <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?><?= $event['event_time'] ? ' at ' . e(date('h:i A', strtotime($event['event_time']))) : ''; ?></span>
                                         <span>Venue: <?= e($event['venue']); ?></span>

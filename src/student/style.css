@@ -187,7 +187,7 @@ button:hover,
     align-items: center;
     background:
         linear-gradient(90deg, rgba(7, 28, 48, 0.92), rgba(8, 92, 106, 0.82)),
-        url("../assets/images/club_logo.svg") center right 8% / 420px no-repeat,
+        url("../assets/images/puc_logo.png") center right 8% / 420px no-repeat,
         #0d1b34;
     color: #fff;
 }
@@ -1186,7 +1186,7 @@ th {
 
 .filter-bar {
     display: grid;
-    grid-template-columns: minmax(240px, 1fr) minmax(180px, 260px) auto;
+    grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(160px, 240px)) auto;
     gap: 14px;
     align-items: end;
     padding: 16px;
@@ -1344,6 +1344,42 @@ th {
     margin-top: 4px;
 }
 
+.club-card {
+    display: grid;
+    gap: 14px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.club-card-head {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+
+.club-card-head img {
+    width: 68px;
+    height: 68px;
+    object-fit: contain;
+    border-radius: 8px;
+    padding: 8px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+}
+
+.club-card h3 {
+    margin-top: 8px;
+    font-size: 21px;
+}
+
+.club-card p {
+    color: var(--muted);
+    line-height: 1.6;
+}
+
 @media (max-width: 1100px) {
     .hero-layout,
     .panel-grid,
@@ -1394,7 +1430,7 @@ th {
         min-height: auto;
         background:
             linear-gradient(180deg, rgba(7, 28, 48, 0.94), rgba(8, 92, 106, 0.86)),
-            url("../assets/images/club_logo.svg") center bottom 22px / 210px no-repeat,
+            url("../assets/images/puc_logo.png") center bottom 22px / 210px no-repeat,
             #0d1b34;
     }
 

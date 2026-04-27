@@ -2,6 +2,7 @@
 require_once __DIR__ . '/backend/db.php';
 
 $stats = [
+    'clubs' => 0,
     'events' => 0,
     'students' => 0,
     'registrations' => 0,
@@ -9,6 +10,7 @@ $stats = [
 ];
 
 $statQueries = [
+    'clubs' => 'SELECT COUNT(*) AS total FROM clubs WHERE status = "active"',
     'events' => 'SELECT COUNT(*) AS total FROM events',
     'students' => 'SELECT COUNT(*) AS total FROM students',
     'registrations' => 'SELECT COUNT(*) AS total FROM registrations',
@@ -24,12 +26,13 @@ foreach ($statQueries as $key => $query) {
 
 $featuredEvents = $conn->query(
     'SELECT e.event_id, e.title, e.description, e.image_path, e.category, e.event_date, e.event_time,
-            e.registration_deadline, e.venue, e.capacity,
+            e.registration_deadline, e.venue, e.capacity, c.name AS club_name,
             COUNT(CASE WHEN r.status IN ("pending", "approved") THEN 1 END) AS total_registered
      FROM events e
+     LEFT JOIN clubs c ON c.club_id = e.club_id
      LEFT JOIN registrations r ON r.event_id = e.event_id
      GROUP BY e.event_id, e.title, e.description, e.image_path, e.category, e.event_date,
-              e.event_time, e.registration_deadline, e.venue, e.capacity
+              e.event_time, e.registration_deadline, e.venue, e.capacity, c.name
      ORDER BY e.event_date ASC
      LIMIT 3'
 );
@@ -54,7 +57,7 @@ $categoryStats = $conn->query(
     <header class="site-header">
         <div class="site-shell site-header-inner">
             <a class="brand-row site-brand" href="index.php">
-                <img src="assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
+                <img src="assets/images/puc_logo.png" alt="PUC Logo" class="brand-logo">
                 <div class="brand-copy">
                     <strong>University Club Event Management</strong>
                     <span>Events, registration, approvals, reports</span>
@@ -63,6 +66,7 @@ $categoryStats = $conn->query(
 
             <nav class="site-menu" aria-label="Main navigation">
                 <a href="index.php" class="active">Home</a>
+                <a href="clubs.php">Clubs</a>
                 <a href="events.php">Events</a>
                 <a href="about.php">About</a>
                 <a href="contact.php">Contact</a>
@@ -139,6 +143,7 @@ $categoryStats = $conn->query(
                                     <h3><?= e($event['title']); ?></h3>
                                     <p><?= e($event['description'] ?: 'University event details will appear here.'); ?></p>
                                     <div class="meta-list">
+                                        <span><?= e($event['club_name'] ?: 'Unassigned Club'); ?></span>
                                         <span><?= e(date('d M Y', strtotime($event['event_date']))); ?><?= $event['event_time'] ? ' at ' . e(date('h:i A', strtotime($event['event_time']))) : ''; ?></span>
                                         <span><?= e($event['venue']); ?></span>
                                         <span><?= e((string) $remaining); ?> seats left</span>
@@ -193,12 +198,12 @@ $categoryStats = $conn->query(
                     </div>
                     <div class="hero-metrics website-metrics">
                         <div class="metric-card">
-                            <strong><?= e((string) $stats['events']); ?></strong>
-                            <span>Published Events</span>
+                            <strong><?= e((string) $stats['clubs']); ?></strong>
+                            <span>Active Clubs</span>
                         </div>
                         <div class="metric-card">
-                            <strong><?= e((string) $stats['students']); ?></strong>
-                            <span>Members</span>
+                            <strong><?= e((string) $stats['events']); ?></strong>
+                            <span>Events</span>
                         </div>
                         <div class="metric-card">
                             <strong><?= e((string) $stats['registrations']); ?></strong>

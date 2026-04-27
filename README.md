@@ -9,7 +9,9 @@ Raw PHP and MySQL based website and dashboard system for managing club events.
 - Member event dashboard and status tracking
 - Member event search, category filtering, and event detail pages
 - Public website pages for Home, Events, About, Contact, and Event Details
+- Public club directory with club-wise event links
 - Admin login
+- Create and manage university club profiles
 - Create club events
 - Create events with category, time, deadline, capacity, and image upload
 - Edit and delete events
@@ -63,6 +65,7 @@ Default connection values:
 
 - Home: `src/index.php`
 - Public event details: `src/event-details.php?id=EVENT_ID`
+- Public clubs directory: `src/clubs.php`
 - Public events catalog: `src/events.php`
 - About page: `src/about.php`
 - Contact page: `src/contact.php`
@@ -73,6 +76,7 @@ Default connection values:
 - Member profile: `src/student/profile.php`
 - Admin login: `src/admin/admin-login.php`
 - Admin dashboard: `src/admin/admin-dashboard.php`
+- Manage clubs: `src/admin/manage-clubs.php`
 - Create event: `src/admin/create-event.php`
 - Manage events: `src/admin/manage-events.php`
 - Manage members: `src/admin/manage-students.php`

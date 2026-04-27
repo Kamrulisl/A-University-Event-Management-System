@@ -35,9 +35,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 $registrationsStmt = $conn->prepare(
     'SELECT r.registration_id, r.status, r.registered_at,
             e.event_id, e.title, e.description, e.image_path, e.category, e.event_date, e.event_time,
-            e.registration_deadline, e.venue, e.capacity
+            e.registration_deadline, e.venue, e.capacity, c.name AS club_name
      FROM registrations r
      INNER JOIN events e ON e.event_id = r.event_id
+     LEFT JOIN clubs c ON c.club_id = e.club_id
      WHERE r.student_id = ?
      ORDER BY e.event_date ASC, r.registered_at DESC'
 );
@@ -77,7 +78,7 @@ $studentSummaryStmt->close();
         <aside class="sidebar">
             <div>
                 <div class="brand-row">
-                    <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
+                    <img src="../assets/images/puc_logo.png" alt="PUC Logo" class="brand-logo">
                     <div class="brand-copy">
                         <strong>University Club Event Management</strong>
                         <span>Member Event Portal</span>
@@ -171,6 +172,7 @@ $studentSummaryStmt->close();
                                     <h3><?= e($registration['title']); ?></h3>
                                     <p><?= e($registration['description'] ?: 'No description available.'); ?></p>
                                     <div class="meta-list">
+                                        <span>Club: <?= e($registration['club_name'] ?: 'Unassigned'); ?></span>
                                         <span>Date: <?= e(date('d M Y', strtotime($registration['event_date']))); ?></span>
                                         <span>Category: <?= e($registration['category']); ?></span>
                                         <span>Time: <?= $registration['event_time'] ? e(date('h:i A', strtotime($registration['event_time']))) : 'TBA'; ?></span>

@@ -3,29 +3,34 @@ require_once __DIR__ . '/backend/db.php';
 
 $search = trim($_GET['search'] ?? '');
 $categoryFilter = trim($_GET['category'] ?? '');
+$clubFilter = (int) ($_GET['club_id'] ?? 0);
 $searchLike = '%' . $search . '%';
 
 $eventsStmt = $conn->prepare(
     'SELECT e.event_id, e.title, e.description, e.image_path, e.category, e.event_date, e.event_time,
-            e.registration_deadline, e.venue, e.capacity,
+            e.registration_deadline, e.venue, e.capacity, c.name AS club_name,
             COUNT(CASE WHEN r.status IN ("pending", "approved") THEN 1 END) AS total_registered
      FROM events e
+     LEFT JOIN clubs c ON c.club_id = e.club_id
      LEFT JOIN registrations r ON r.event_id = e.event_id
      WHERE (? = "" OR e.title LIKE ? OR e.description LIKE ? OR e.venue LIKE ? OR e.category LIKE ?)
        AND (? = "" OR e.category = ?)
+       AND (? = 0 OR e.club_id = ?)
      GROUP BY e.event_id, e.title, e.description, e.image_path, e.category, e.event_date,
-              e.event_time, e.registration_deadline, e.venue, e.capacity
+              e.event_time, e.registration_deadline, e.venue, e.capacity, c.name
      ORDER BY e.event_date ASC'
 );
 $eventsStmt->bind_param(
-    'sssssss',
+    'sssssssii',
     $search,
     $searchLike,
     $searchLike,
     $searchLike,
     $searchLike,
     $categoryFilter,
-    $categoryFilter
+    $categoryFilter,
+    $clubFilter,
+    $clubFilter
 );
 $eventsStmt->execute();
 $events = $eventsStmt->get_result();
@@ -35,6 +40,13 @@ $categories = $conn->query(
      FROM events
      WHERE category IS NOT NULL AND category != ""
      ORDER BY category ASC'
+);
+
+$clubs = $conn->query(
+    'SELECT club_id, name
+     FROM clubs
+     WHERE status = "active"
+     ORDER BY name ASC'
 );
 ?>
 <!DOCTYPE html>
@@ -49,7 +61,7 @@ $categories = $conn->query(
     <header class="site-header">
         <div class="site-shell site-header-inner">
             <a class="brand-row site-brand" href="index.php">
-                <img src="assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
+                <img src="assets/images/puc_logo.png" alt="PUC Logo" class="brand-logo">
                 <div class="brand-copy">
                     <strong>University Club Event Management</strong>
                     <span>Public event catalog</span>
@@ -57,6 +69,7 @@ $categories = $conn->query(
             </a>
             <nav class="site-menu" aria-label="Main navigation">
                 <a href="index.php">Home</a>
+                <a href="clubs.php">Clubs</a>
                 <a href="events.php" class="active">Events</a>
                 <a href="about.php">About</a>
                 <a href="contact.php">Contact</a>
@@ -91,6 +104,17 @@ $categories = $conn->query(
                     <?php endif; ?>
                 </select>
             </label>
+            <label>
+                <span>Club</span>
+                <select name="club_id">
+                    <option value="0">All clubs</option>
+                    <?php if ($clubs): ?>
+                        <?php while ($club = $clubs->fetch_assoc()): ?>
+                            <option value="<?= e((string) $club['club_id']); ?>" <?= $clubFilter === (int) $club['club_id'] ? 'selected' : ''; ?>><?= e($club['name']); ?></option>
+                        <?php endwhile; ?>
+                    <?php endif; ?>
+                </select>
+            </label>
             <div class="filter-actions">
                 <button type="submit">Search</button>
                 <a class="button-link ghost" href="events.php">Reset</a>
@@ -115,6 +139,7 @@ $categories = $conn->query(
                             <h3><?= e($event['title']); ?></h3>
                             <p><?= e($event['description'] ?: 'Event details will be updated soon.'); ?></p>
                             <div class="meta-list">
+                                <span>Club: <?= e($event['club_name'] ?: 'Unassigned'); ?></span>
                                 <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?><?= $event['event_time'] ? ' at ' . e(date('h:i A', strtotime($event['event_time']))) : ''; ?></span>
                                 <span>Venue: <?= e($event['venue']); ?></span>
                                 <span>Seats left: <?= e((string) $remaining); ?> / <?= e((string) $event['capacity']); ?></span>

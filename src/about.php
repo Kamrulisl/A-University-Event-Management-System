@@ -13,7 +13,7 @@ require_once __DIR__ . '/backend/db.php';
     <header class="site-header">
         <div class="site-shell site-header-inner">
             <a class="brand-row site-brand" href="index.php">
-                <img src="assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
+                <img src="assets/images/puc_logo.png" alt="PUC Logo" class="brand-logo">
                 <div class="brand-copy">
                     <strong>University Club Event Management</strong>
                     <span>Project overview</span>
@@ -21,6 +21,7 @@ require_once __DIR__ . '/backend/db.php';
             </a>
             <nav class="site-menu" aria-label="Main navigation">
                 <a href="index.php">Home</a>
+                <a href="clubs.php">Clubs</a>
                 <a href="events.php">Events</a>
                 <a href="about.php" class="active">About</a>
                 <a href="contact.php">Contact</a>

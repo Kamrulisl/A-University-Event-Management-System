@@ -41,10 +41,51 @@ function ensureColumn(mysqli $conn, string $dbName, string $tableName, string $c
 }
 
 // Keep lightweight schema compatibility for older local databases.
+$conn->query(
+    "CREATE TABLE IF NOT EXISTS clubs (
+        club_id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(150) NOT NULL UNIQUE,
+        category VARCHAR(80) DEFAULT 'General',
+        advisor_name VARCHAR(120) DEFAULT NULL,
+        advisor_email VARCHAR(120) DEFAULT NULL,
+        description TEXT,
+        logo_path VARCHAR(255) DEFAULT 'assets/images/club_logo.svg',
+        status ENUM('active', 'inactive') DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )"
+);
+
 ensureColumn($conn, $dbName, 'events', 'image_path', 'VARCHAR(255) DEFAULT NULL AFTER description');
+ensureColumn($conn, $dbName, 'events', 'club_id', 'INT DEFAULT NULL AFTER event_id');
 ensureColumn($conn, $dbName, 'events', 'category', "VARCHAR(80) DEFAULT 'General' AFTER image_path");
 ensureColumn($conn, $dbName, 'events', 'event_time', 'TIME DEFAULT NULL AFTER event_date');
 ensureColumn($conn, $dbName, 'events', 'registration_deadline', 'DATE DEFAULT NULL AFTER event_time');
+
+$conn->query(
+    "INSERT INTO clubs (name, category, advisor_name, advisor_email, description)
+     SELECT 'Computer Programming Club', 'Technology', 'CSE Faculty Advisor', 'programming.club@university.edu',
+            'Organizes programming contests, coding workshops, and technical learning sessions.'
+     WHERE NOT EXISTS (SELECT 1 FROM clubs WHERE name = 'Computer Programming Club')"
+);
+$conn->query(
+    "INSERT INTO clubs (name, category, advisor_name, advisor_email, description)
+     SELECT 'AI & Innovation Club', 'Technology', 'Innovation Lab Advisor', 'ai.club@university.edu',
+            'Runs AI workshops, project showcases, and innovation meetups for club members.'
+     WHERE NOT EXISTS (SELECT 1 FROM clubs WHERE name = 'AI & Innovation Club')"
+);
+
+$conn->query(
+    "UPDATE events e
+     INNER JOIN clubs c ON c.name = 'Computer Programming Club'
+     SET e.club_id = c.club_id
+     WHERE e.club_id IS NULL AND e.title = 'Programming Contest'"
+);
+$conn->query(
+    "UPDATE events e
+     INNER JOIN clubs c ON c.name = 'AI & Innovation Club'
+     SET e.club_id = c.club_id
+     WHERE e.club_id IS NULL AND e.title = 'AI Workshop'"
+);
 
 function isStudentLoggedIn(): bool
 {
