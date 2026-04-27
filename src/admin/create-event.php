@@ -5,7 +5,7 @@ requireAdminAuth();
 $message = '';
 $messageType = 'error';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
     $category = trim($_POST['category'] ?? 'General');

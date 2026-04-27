@@ -9,7 +9,7 @@ if (isStudentLoggedIn()) {
 $message = '';
 $messageType = 'error';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 

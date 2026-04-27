@@ -6,7 +6,7 @@ $adminId = (int) $_SESSION['admin_id'];
 $message = '';
 $messageType = 'success';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $action = $_POST['action'] ?? '';
 
     if (!verifyCsrfToken()) {

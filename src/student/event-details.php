@@ -7,7 +7,7 @@ $eventId = (int) ($_GET['id'] ?? $_POST['event_id'] ?? 0);
 $message = '';
 $messageType = 'success';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $eventId > 0) {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $eventId > 0) {
     if (!verifyCsrfToken()) {
         $message = 'Invalid form request. Please try again.';
         $messageType = 'error';

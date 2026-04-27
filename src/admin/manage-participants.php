@@ -5,7 +5,7 @@ requireAdminAuth();
 $message = '';
 $messageType = 'success';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $registrationId = (int) ($_POST['registration_id'] ?? 0);
     $status = $_POST['status'] ?? '';
 

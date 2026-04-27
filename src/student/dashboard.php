@@ -8,7 +8,7 @@ $studentId = (int) $_SESSION['student_id'];
 $search = trim($_GET['search'] ?? '');
 $categoryFilter = trim($_GET['category'] ?? '');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['event_id'])) {
     $eventId = (int) $_POST['event_id'];
 
     if (!verifyCsrfToken()) {

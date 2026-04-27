@@ -6,7 +6,7 @@ $studentId = (int) $_SESSION['student_id'];
 $message = '';
 $messageType = 'success';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $action = $_POST['action'] ?? '';
     $registrationId = (int) ($_POST['registration_id'] ?? 0);
 

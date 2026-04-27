@@ -6,7 +6,7 @@ $message = '';
 $messageType = 'success';
 $editEvent = null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $action = $_POST['action'] ?? '';
 
     if (!verifyCsrfToken()) {
