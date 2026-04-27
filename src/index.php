@@ -21,7 +21,7 @@ foreach ($statQueries as $key => $query) {
 }
 
 $featuredEvents = $conn->query(
-    'SELECT title, description, event_date, venue, capacity
+    'SELECT title, description, image_path, event_date, venue, capacity
      FROM events
      ORDER BY event_date ASC
      LIMIT 3'
@@ -102,12 +102,17 @@ $featuredEvents = $conn->query(
                                 <div class="empty-state">No events have been published yet.</div>
                             <?php else: ?>
                                 <?php while ($event = $featuredEvents->fetch_assoc()): ?>
-                                    <article class="hero-event-item">
-                                        <h3><?= e($event['title']); ?></h3>
-                                        <div class="hero-event-meta">
-                                            <span><?= e(date('d M Y', strtotime($event['event_date']))); ?></span>
-                                            <span><?= e($event['venue']); ?></span>
-                                            <span>Capacity: <?= e((string) $event['capacity']); ?></span>
+                                    <article class="event-media-card compact-card">
+                                        <div class="event-thumb small-thumb">
+                                            <img src="<?= eventImageUrl($event['image_path']); ?>" alt="<?= e($event['title']); ?>">
+                                        </div>
+                                        <div class="event-body">
+                                            <strong><?= e($event['title']); ?></strong>
+                                            <div class="hero-event-meta">
+                                                <span><?= e(date('d M Y', strtotime($event['event_date']))); ?></span>
+                                                <span><?= e($event['venue']); ?></span>
+                                                <span>Capacity: <?= e((string) $event['capacity']); ?></span>
+                                            </div>
                                         </div>
                                     </article>
                                 <?php endwhile; ?>

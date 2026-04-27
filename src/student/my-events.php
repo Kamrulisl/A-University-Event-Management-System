@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $registrationsStmt = $conn->prepare(
     'SELECT r.registration_id, r.status, r.registered_at,
-            e.title, e.description, e.event_date, e.venue, e.capacity
+            e.title, e.description, e.image_path, e.event_date, e.venue, e.capacity
      FROM registrations r
      INNER JOIN events e ON e.event_id = r.event_id
      WHERE r.student_id = ?
@@ -154,50 +154,37 @@ $studentSummaryStmt->close();
                     <h2>Registered Events</h2>
                     <p class="muted">Your complete registration list with action support for pending items.</p>
                 </div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Event</th>
-                                <th>Date</th>
-                                <th>Venue</th>
-                                <th>Status</th>
-                                <th>Requested</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!$registrations || $registrations->num_rows === 0): ?>
-                                <tr>
-                                    <td colspan="6">You have not registered for any event yet.</td>
-                                </tr>
-                            <?php else: ?>
-                                <?php while ($registration = $registrations->fetch_assoc()): ?>
-                                    <tr>
-                                        <td>
-                                            <strong><?= e($registration['title']); ?></strong><br>
-                                            <span class="muted"><?= e($registration['description'] ?: 'No description available.'); ?></span>
-                                        </td>
-                                        <td><?= e(date('d M Y', strtotime($registration['event_date']))); ?></td>
-                                        <td><?= e($registration['venue']); ?></td>
-                                        <td><span class="status-badge status-<?= e($registration['status']); ?>"><?= e(ucfirst($registration['status'])); ?></span></td>
-                                        <td><?= e(date('d M Y', strtotime($registration['registered_at']))); ?></td>
-                                        <td>
-                                            <?php if ($registration['status'] === 'pending'): ?>
-                                                <form method="post" class="mini-form">
-                                                    <input type="hidden" name="action" value="cancel_registration">
-                                                    <input type="hidden" name="registration_id" value="<?= e((string) $registration['registration_id']); ?>">
-                                                    <button type="submit" class="small-btn danger-btn">Cancel</button>
-                                                </form>
-                                            <?php else: ?>
-                                                <span class="muted">No action</span>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                <div class="showcase-grid">
+                    <?php if (!$registrations || $registrations->num_rows === 0): ?>
+                        <div class="empty-state">You have not registered for any event yet.</div>
+                    <?php else: ?>
+                        <?php while ($registration = $registrations->fetch_assoc()): ?>
+                            <article class="event-media-card">
+                                <div class="event-thumb">
+                                    <img src="<?= eventImageUrl($registration['image_path'], '../'); ?>" alt="<?= e($registration['title']); ?>">
+                                </div>
+                                <div class="event-body">
+                                    <h3><?= e($registration['title']); ?></h3>
+                                    <p><?= e($registration['description'] ?: 'No description available.'); ?></p>
+                                    <div class="meta-list">
+                                        <span>Date: <?= e(date('d M Y', strtotime($registration['event_date']))); ?></span>
+                                        <span>Venue: <?= e($registration['venue']); ?></span>
+                                        <span>Requested: <?= e(date('d M Y', strtotime($registration['registered_at']))); ?></span>
+                                    </div>
+                                    <div class="table-actions">
+                                        <span class="status-badge status-<?= e($registration['status']); ?>"><?= e(ucfirst($registration['status'])); ?></span>
+                                        <?php if ($registration['status'] === 'pending'): ?>
+                                            <form method="post" class="mini-form">
+                                                <input type="hidden" name="action" value="cancel_registration">
+                                                <input type="hidden" name="registration_id" value="<?= e((string) $registration['registration_id']); ?>">
+                                                <button type="submit" class="small-btn danger-btn">Cancel Request</button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </article>
+                        <?php endwhile; ?>
+                    <?php endif; ?>
                 </div>
             </section>
         </main>

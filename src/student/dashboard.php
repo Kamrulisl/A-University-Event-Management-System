@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
 }
 
 $eventsQuery = '
-    SELECT e.event_id, e.title, e.description, e.event_date, e.venue, e.capacity,
+    SELECT e.event_id, e.title, e.description, e.image_path, e.event_date, e.venue, e.capacity,
            COUNT(r.registration_id) AS total_registered,
            MAX(CASE WHEN my.student_id IS NOT NULL THEN my.status ELSE NULL END) AS my_status
     FROM events e
@@ -53,7 +53,7 @@ $eventsQuery = '
     LEFT JOIN registrations my
         ON my.event_id = e.event_id
         AND my.student_id = ?
-    GROUP BY e.event_id, e.title, e.description, e.event_date, e.venue, e.capacity
+    GROUP BY e.event_id, e.title, e.description, e.image_path, e.event_date, e.venue, e.capacity
     ORDER BY e.event_date ASC
 ';
 
@@ -209,7 +209,7 @@ $upcomingSummaryStmt->close();
                         <p class="muted">Available university events with current seat status.</p>
                     </div>
 
-                    <div class="card-grid">
+                    <div class="showcase-grid">
                         <?php while ($event = $events->fetch_assoc()): ?>
                             <?php
                             $totalRegistered = (int) $event['total_registered'];
@@ -217,31 +217,36 @@ $upcomingSummaryStmt->close();
                             $remaining = max($capacity - $totalRegistered, 0);
                             $myStatus = $event['my_status'];
                             ?>
-                            <article class="info-card">
-                                <h3><?= e($event['title']); ?></h3>
-                                <p><?= e($event['description'] ?? 'No description added yet.'); ?></p>
-                                <div class="meta-list">
-                                    <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?></span>
-                                    <span>Venue: <?= e($event['venue']); ?></span>
-                                    <span>Seats Left: <?= e((string) $remaining); ?> / <?= e((string) $capacity); ?></span>
+                            <article class="event-media-card">
+                                <div class="event-thumb">
+                                    <img src="<?= eventImageUrl($event['image_path'], '../'); ?>" alt="<?= e($event['title']); ?>">
                                 </div>
+                                <div class="event-body">
+                                    <h3><?= e($event['title']); ?></h3>
+                                    <p><?= e($event['description'] ?? 'No description added yet.'); ?></p>
+                                    <div class="meta-list">
+                                        <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?></span>
+                                        <span>Venue: <?= e($event['venue']); ?></span>
+                                        <span>Seats Left: <?= e((string) $remaining); ?> / <?= e((string) $capacity); ?></span>
+                                    </div>
 
-                                <?php if ($myStatus !== null): ?>
-                                    <span class="status-badge status-<?= e($myStatus); ?>"><?= e(ucfirst($myStatus)); ?></span>
-                                <?php elseif ($remaining > 0): ?>
-                                    <form method="post">
-                                        <input type="hidden" name="event_id" value="<?= e((string) $event['event_id']); ?>">
-                                        <button type="submit">Register Now</button>
-                                    </form>
-                                <?php else: ?>
-                                    <span class="status-badge status-rejected">Full</span>
-                                <?php endif; ?>
+                                    <?php if ($myStatus !== null): ?>
+                                        <span class="status-badge status-<?= e($myStatus); ?>"><?= e(ucfirst($myStatus)); ?></span>
+                                    <?php elseif ($remaining > 0): ?>
+                                        <form method="post">
+                                            <input type="hidden" name="event_id" value="<?= e((string) $event['event_id']); ?>">
+                                            <button type="submit">Register Now</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <span class="status-badge status-rejected">Full</span>
+                                    <?php endif; ?>
+                                </div>
                             </article>
                         <?php endwhile; ?>
                     </div>
                 </section>
 
-                <section class="panel">
+                <section class="glass-panel">
                     <div class="section-head">
                         <h2>My Activity</h2>
                         <p class="muted">A quick summary of your event participation record.</p>

@@ -24,7 +24,7 @@ foreach ($statQueries as $key => $query) {
 }
 
 $recentEvents = $conn->query(
-    'SELECT title, event_date, venue, capacity
+    'SELECT title, image_path, event_date, venue, capacity
      FROM events
      ORDER BY event_date ASC
      LIMIT 5'
@@ -117,33 +117,26 @@ $recentRegistrations = $conn->query(
                     <h2>Recent Events</h2>
                     <p class="muted">Current event list with schedule and seat capacity.</p>
                 </div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Date</th>
-                                <th>Venue</th>
-                                <th>Capacity</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!$recentEvents || $recentEvents->num_rows === 0): ?>
-                                <tr>
-                                    <td colspan="4">No events available yet.</td>
-                                </tr>
-                            <?php else: ?>
-                                <?php while ($event = $recentEvents->fetch_assoc()): ?>
-                                    <tr>
-                                        <td><?= e($event['title']); ?></td>
-                                        <td><?= e(date('d M Y', strtotime($event['event_date']))); ?></td>
-                                        <td><?= e($event['venue']); ?></td>
-                                        <td><?= e((string) $event['capacity']); ?></td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                <div class="showcase-grid">
+                    <?php if (!$recentEvents || $recentEvents->num_rows === 0): ?>
+                        <div class="empty-state">No events available yet.</div>
+                    <?php else: ?>
+                        <?php while ($event = $recentEvents->fetch_assoc()): ?>
+                            <article class="event-media-card">
+                                <div class="event-thumb">
+                                    <img src="<?= eventImageUrl($event['image_path'], '../'); ?>" alt="<?= e($event['title']); ?>">
+                                </div>
+                                <div class="event-body">
+                                    <h3><?= e($event['title']); ?></h3>
+                                    <div class="meta-list">
+                                        <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?></span>
+                                        <span>Venue: <?= e($event['venue']); ?></span>
+                                        <span>Capacity: <?= e((string) $event['capacity']); ?></span>
+                                    </div>
+                                </div>
+                            </article>
+                        <?php endwhile; ?>
+                    <?php endif; ?>
                 </div>
             </section>
 

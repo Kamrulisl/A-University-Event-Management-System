@@ -31,6 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $eventDate = $_POST['event_date'] ?? '';
         $venue = trim($_POST['venue'] ?? '');
         $capacity = (int) ($_POST['capacity'] ?? 0);
+        $currentImagePath = trim($_POST['current_image_path'] ?? '');
+        $newImagePath = storeEventImage($_FILES['event_image'] ?? [], __DIR__ . '/../assets/uploads', 'assets/uploads');
+        $imagePath = $newImagePath ?? $currentImagePath;
 
         if ($capacity < 1 || $capacity > 500) {
             $message = 'Capacity must be between 1 and 500.';
@@ -38,10 +41,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $updateStmt = $conn->prepare(
                 'UPDATE events
-                 SET title = ?, description = ?, event_date = ?, venue = ?, capacity = ?
+                 SET title = ?, description = ?, image_path = ?, event_date = ?, venue = ?, capacity = ?
                  WHERE event_id = ?'
             );
-            $updateStmt->bind_param('ssssii', $title, $description, $eventDate, $venue, $capacity, $eventId);
+            $updateStmt->bind_param('sssssii', $title, $description, $imagePath, $eventDate, $venue, $capacity, $eventId);
 
             if ($updateStmt->execute()) {
                 $message = 'Event updated successfully.';
@@ -65,11 +68,11 @@ if (isset($_GET['edit'])) {
 }
 
 $events = $conn->query(
-    'SELECT e.event_id, e.title, e.description, e.event_date, e.venue, e.capacity,
+    'SELECT e.event_id, e.title, e.description, e.image_path, e.event_date, e.venue, e.capacity,
             COUNT(r.registration_id) AS total_registrations
      FROM events e
      LEFT JOIN registrations r ON r.event_id = e.event_id
-     GROUP BY e.event_id, e.title, e.description, e.event_date, e.venue, e.capacity
+     GROUP BY e.event_id, e.title, e.description, e.image_path, e.event_date, e.venue, e.capacity
      ORDER BY e.event_date ASC'
 );
 ?>
@@ -128,9 +131,10 @@ $events = $conn->query(
                         <h2>Edit Event</h2>
                         <p class="muted">Update the selected event and save the revised information.</p>
                     </div>
-                    <form method="post" class="stack-form">
+                    <form method="post" class="stack-form" enctype="multipart/form-data">
                         <input type="hidden" name="action" value="update_event">
                         <input type="hidden" name="event_id" value="<?= e((string) $editEvent['event_id']); ?>">
+                        <input type="hidden" name="current_image_path" value="<?= e((string) ($editEvent['image_path'] ?? '')); ?>">
                         <label>
                             <span>Event Title</span>
                             <input type="text" name="title" value="<?= e($editEvent['title']); ?>" required>
@@ -153,6 +157,13 @@ $events = $conn->query(
                             <span>Venue</span>
                             <input type="text" name="venue" value="<?= e($editEvent['venue']); ?>" required>
                         </label>
+                        <label>
+                            <span>Change Event Image</span>
+                            <input type="file" name="event_image" accept=".jpg,.jpeg,.png,.webp">
+                        </label>
+                        <div class="event-thumb medium-thumb">
+                            <img src="<?= eventImageUrl($editEvent['image_path'] ?? null, '../'); ?>" alt="<?= e($editEvent['title']); ?>">
+                        </div>
                         <div class="table-actions">
                             <button type="submit">Save Changes</button>
                             <a class="button-link ghost" href="manage-events.php">Cancel</a>
@@ -166,46 +177,36 @@ $events = $conn->query(
                     <h2>All Events</h2>
                     <p class="muted">Full event list with schedule, capacity, and registration volume.</p>
                 </div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Date</th>
-                                <th>Venue</th>
-                                <th>Capacity</th>
-                                <th>Registrations</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!$events || $events->num_rows === 0): ?>
-                                <tr>
-                                    <td colspan="6">No events found.</td>
-                                </tr>
-                            <?php else: ?>
-                                <?php while ($event = $events->fetch_assoc()): ?>
-                                    <tr>
-                                        <td><?= e($event['title']); ?></td>
-                                        <td><?= e(date('d M Y', strtotime($event['event_date']))); ?></td>
-                                        <td><?= e($event['venue']); ?></td>
-                                        <td><?= e((string) $event['capacity']); ?></td>
-                                        <td><?= e((string) $event['total_registrations']); ?></td>
-                                        <td>
-                                            <div class="table-actions">
-                                                <a class="button-link ghost small-btn" href="manage-events.php?edit=<?= e((string) $event['event_id']); ?>">Edit</a>
-                                                <form method="post" class="mini-form">
-                                                    <input type="hidden" name="action" value="delete_event">
-                                                    <input type="hidden" name="event_id" value="<?= e((string) $event['event_id']); ?>">
-                                                    <button type="submit" class="small-btn danger-btn">Delete</button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                <div class="card-grid">
+                    <?php if (!$events || $events->num_rows === 0): ?>
+                        <div class="empty-state">No events found.</div>
+                    <?php else: ?>
+                        <?php while ($event = $events->fetch_assoc()): ?>
+                            <article class="event-media-card">
+                                <div class="event-thumb">
+                                    <img src="<?= eventImageUrl($event['image_path'], '../'); ?>" alt="<?= e($event['title']); ?>">
+                                </div>
+                                <div class="event-body">
+                                    <h3><?= e($event['title']); ?></h3>
+                                    <p><?= e($event['description'] ?: 'No description available yet.'); ?></p>
+                                    <div class="meta-list">
+                                        <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?></span>
+                                        <span>Venue: <?= e($event['venue']); ?></span>
+                                        <span>Capacity: <?= e((string) $event['capacity']); ?></span>
+                                        <span>Registrations: <?= e((string) $event['total_registrations']); ?></span>
+                                    </div>
+                                    <div class="table-actions">
+                                        <a class="button-link ghost small-btn" href="manage-events.php?edit=<?= e((string) $event['event_id']); ?>">Edit</a>
+                                        <form method="post" class="mini-form">
+                                            <input type="hidden" name="action" value="delete_event">
+                                            <input type="hidden" name="event_id" value="<?= e((string) $event['event_id']); ?>">
+                                            <button type="submit" class="small-btn danger-btn">Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </article>
+                        <?php endwhile; ?>
+                    <?php endif; ?>
                 </div>
             </section>
         </main>
