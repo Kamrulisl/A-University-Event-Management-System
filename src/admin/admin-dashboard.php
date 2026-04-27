@@ -1,0 +1,206 @@
+<?php
+require_once __DIR__ . '/../backend/db.php';
+requireAdminAuth();
+
+$stats = [
+    'events' => 0,
+    'students' => 0,
+    'registrations' => 0,
+    'pending' => 0,
+];
+
+$statQueries = [
+    'events' => 'SELECT COUNT(*) AS total FROM events',
+    'students' => 'SELECT COUNT(*) AS total FROM students',
+    'registrations' => 'SELECT COUNT(*) AS total FROM registrations',
+    'pending' => 'SELECT COUNT(*) AS total FROM registrations WHERE status = "pending"',
+];
+
+foreach ($statQueries as $key => $query) {
+    $result = $conn->query($query);
+    if ($result) {
+        $stats[$key] = (int) $result->fetch_assoc()['total'];
+    }
+}
+
+$recentEvents = $conn->query(
+    'SELECT title, event_date, venue, capacity
+     FROM events
+     ORDER BY event_date ASC
+     LIMIT 5'
+);
+
+$recentRegistrations = $conn->query(
+    'SELECT s.name AS student_name, e.title AS event_title, r.status
+     FROM registrations r
+     INNER JOIN students s ON s.student_id = r.student_id
+     INNER JOIN events e ON e.event_id = r.event_id
+     ORDER BY r.registered_at DESC
+     LIMIT 5'
+);
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Premier University</title>
+    <link rel="stylesheet" href="../student/style.css">
+</head>
+<body class="app-page">
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div>
+                <div class="brand-row">
+                    <img src="../assets/images/puc_logo.png" alt="Premier University Logo" class="brand-logo">
+                    <div class="brand-copy">
+                        <strong>Premier University</strong>
+                        <span>Admin Event Control</span>
+                    </div>
+                </div>
+                <div class="sidebar-card" style="margin-top: 22px;">
+                    <p class="eyebrow">Administrator</p>
+                    <div class="profile-meta">
+                        <strong><?= e($_SESSION['admin_name']); ?></strong>
+                        <span><?= e($_SESSION['admin_email']); ?></span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <nav class="nav-links">
+                    <a href="admin-dashboard.php" class="active">Dashboard</a>
+                    <a href="create-event.php">Create Event</a>
+                    <a href="manage-events.php">Manage Events</a>
+                    <a href="manage-students.php">Students</a>
+                    <a href="manage-participants.php">Participants</a>
+                    <a href="profile.php">Admin Profile</a>
+                    <a href="../index.php">Home</a>
+                    <a href="../backend/logout.php?admin=1">Logout</a>
+                </nav>
+            </div>
+        </aside>
+
+        <main class="content">
+            <section class="topbar">
+                <div>
+                    <h1>Hello, <?= e($_SESSION['admin_name']); ?></h1>
+                    <p class="muted">Track event activity, student participation, and pending approvals from one admin workspace.</p>
+                </div>
+                <div class="topbar-actions">
+                    <a class="button-link" href="create-event.php">Create Event</a>
+                    <a class="button-link ghost" href="manage-participants.php">Review Participants</a>
+                </div>
+            </section>
+
+            <section class="stats-grid">
+                <article class="stat-card">
+                    <span>Total Events</span>
+                    <strong><?= e((string) $stats['events']); ?></strong>
+                </article>
+                <article class="stat-card">
+                    <span>Total Students</span>
+                    <strong><?= e((string) $stats['students']); ?></strong>
+                </article>
+                <article class="stat-card">
+                    <span>Registrations</span>
+                    <strong><?= e((string) $stats['registrations']); ?></strong>
+                </article>
+                <article class="stat-card">
+                    <span>Pending Requests</span>
+                    <strong><?= e((string) $stats['pending']); ?></strong>
+                </article>
+            </section>
+
+            <section class="panel">
+                <div class="section-head">
+                    <h2>Recent Events</h2>
+                    <p class="muted">Current event list with schedule and seat capacity.</p>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Venue</th>
+                                <th>Capacity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!$recentEvents || $recentEvents->num_rows === 0): ?>
+                                <tr>
+                                    <td colspan="4">No events available yet.</td>
+                                </tr>
+                            <?php else: ?>
+                                <?php while ($event = $recentEvents->fetch_assoc()): ?>
+                                    <tr>
+                                        <td><?= e($event['title']); ?></td>
+                                        <td><?= e(date('d M Y', strtotime($event['event_date']))); ?></td>
+                                        <td><?= e($event['venue']); ?></td>
+                                        <td><?= e((string) $event['capacity']); ?></td>
+                                    </tr>
+                                <?php endwhile; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="quick-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+                <section class="quick-card">
+                    <div class="section-head">
+                        <h2>Quick Actions</h2>
+                        <p class="muted">Common admin work starts here.</p>
+                    </div>
+                    <div class="list-stack">
+                        <div class="list-item">
+                            <div>
+                                <strong>Create and publish events</strong>
+                                <span>Add title, venue, date, capacity, and description.</span>
+                            </div>
+                            <a class="button-link" href="create-event.php">Open</a>
+                        </div>
+                        <div class="list-item">
+                            <div>
+                                <strong>Review registration requests</strong>
+                                <span>Approve or reject students for each event.</span>
+                            </div>
+                            <a class="button-link ghost" href="manage-participants.php">Open</a>
+                        </div>
+                        <div class="list-item">
+                            <div>
+                                <strong>Edit events and manage students</strong>
+                                <span>Keep event data and student records organized.</span>
+                            </div>
+                            <a class="button-link secondary" href="manage-events.php">Open</a>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="quick-card">
+                    <div class="section-head">
+                        <h2>Recent Registrations</h2>
+                        <p class="muted">Latest student activity in the system.</p>
+                    </div>
+                    <div class="list-stack">
+                        <?php if (!$recentRegistrations || $recentRegistrations->num_rows === 0): ?>
+                            <div class="empty-state">No registration activity yet.</div>
+                        <?php else: ?>
+                            <?php while ($row = $recentRegistrations->fetch_assoc()): ?>
+                                <div class="list-item">
+                                    <div>
+                                        <strong><?= e($row['student_name']); ?></strong>
+                                        <span><?= e($row['event_title']); ?></span>
+                                    </div>
+                                    <span class="status-badge status-<?= e($row['status']); ?>"><?= e(ucfirst($row['status'])); ?></span>
+                                </div>
+                            <?php endwhile; ?>
+                        <?php endif; ?>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

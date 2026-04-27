@@ -1,0 +1,157 @@
+<?php
+require_once __DIR__ . '/../backend/db.php';
+requireAdminAuth();
+
+$message = '';
+$messageType = 'error';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $title = trim($_POST['title'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+    $eventDate = $_POST['event_date'] ?? '';
+    $venue = trim($_POST['venue'] ?? '');
+    $capacity = (int) ($_POST['capacity'] ?? 0);
+    $adminId = (int) $_SESSION['admin_id'];
+
+    if ($capacity < 1 || $capacity > 500) {
+        $message = 'Capacity must be between 1 and 500.';
+    } else {
+        $stmt = $conn->prepare(
+            'INSERT INTO events (title, description, event_date, venue, capacity, created_by)
+             VALUES (?, ?, ?, ?, ?, ?)'
+        );
+        $stmt->bind_param('ssssii', $title, $description, $eventDate, $venue, $capacity, $adminId);
+
+        if ($stmt->execute()) {
+            $message = 'Event created successfully.';
+            $messageType = 'success';
+        } else {
+            $message = 'Could not create event.';
+        }
+
+        $stmt->close();
+    }
+}
+
+$eventList = $conn->query(
+    'SELECT title, event_date, venue, capacity
+     FROM events
+     ORDER BY event_date DESC'
+);
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event | Premier University</title>
+    <link rel="stylesheet" href="../student/style.css">
+</head>
+<body class="app-page">
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div>
+                <div class="brand-row">
+                    <img src="../assets/images/puc_logo.png" alt="Premier University Logo" class="brand-logo">
+                    <div class="brand-copy">
+                        <strong>Premier University</strong>
+                        <span>Admin Event Control</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <nav class="nav-links">
+                    <a href="admin-dashboard.php">Dashboard</a>
+                    <a href="create-event.php" class="active">Create Event</a>
+                    <a href="manage-events.php">Manage Events</a>
+                    <a href="manage-students.php">Students</a>
+                    <a href="manage-participants.php">Participants</a>
+                    <a href="profile.php">Admin Profile</a>
+                    <a href="../index.php">Home</a>
+                    <a href="../backend/logout.php?admin=1">Logout</a>
+                </nav>
+            </div>
+        </aside>
+
+        <main class="content">
+            <section class="topbar">
+                <div>
+                    <h1>Create a New Event</h1>
+                    <p class="muted">Publish workshops, contests, seminars, and cultural programs for Premier University students.</p>
+                </div>
+                <div class="topbar-actions">
+                    <a class="button-link ghost" href="admin-dashboard.php">Back to Dashboard</a>
+                    <a class="button-link ghost" href="manage-events.php">Manage Events</a>
+                    <a class="button-link secondary" href="manage-participants.php">Participants</a>
+                </div>
+            </section>
+
+            <?php if ($message !== ''): ?>
+                <div class="alert <?= e($messageType); ?>"><?= e($message); ?></div>
+            <?php endif; ?>
+
+            <div class="panel-grid">
+                <section class="panel form-panel">
+                    <div class="section-head">
+                        <h2>Event Form</h2>
+                        <p class="muted">Provide the core event details students need before registration.</p>
+                    </div>
+                    <form method="post" class="stack-form">
+                        <label>
+                            <span>Event Title</span>
+                            <input type="text" name="title" placeholder="Programming Contest" required>
+                        </label>
+
+                        <label>
+                            <span>Description</span>
+                            <textarea name="description" rows="5" placeholder="Add a short event description"></textarea>
+                        </label>
+
+                        <div class="inline-grid">
+                            <label>
+                                <span>Event Date</span>
+                                <input type="date" name="event_date" required>
+                            </label>
+
+                            <label>
+                                <span>Capacity</span>
+                                <input type="number" name="capacity" min="1" max="500" placeholder="120" required>
+                            </label>
+                        </div>
+
+                        <label>
+                            <span>Venue</span>
+                            <input type="text" name="venue" placeholder="Main Auditorium" required>
+                        </label>
+
+                        <button type="submit">Create Event</button>
+                    </form>
+                </section>
+
+                <section class="panel">
+                    <div class="section-head">
+                        <h2>Published Events</h2>
+                        <p class="muted">A quick overview of events already available in the system.</p>
+                    </div>
+                    <div class="list-stack">
+                        <?php if (!$eventList || $eventList->num_rows === 0): ?>
+                            <div class="empty-state">No events have been created yet.</div>
+                        <?php else: ?>
+                            <?php while ($event = $eventList->fetch_assoc()): ?>
+                                <div class="list-item">
+                                    <div>
+                                        <strong><?= e($event['title']); ?></strong>
+                                        <span><?= e(date('d M Y', strtotime($event['event_date']))); ?> | <?= e($event['venue']); ?></span>
+                                    </div>
+                                    <span class="status-badge status-pending">Seats: <?= e((string) $event['capacity']); ?></span>
+                                </div>
+                            <?php endwhile; ?>
+                        <?php endif; ?>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,96 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{graphicx}
+
+\title{Software Requirement Analysis \\ University Event \& Club Management System}
+
+% Authors with ID
+\author{
+Umma Habiba Naznin (ID: 0222310005101034) \\
+Takwya Rahman Rushba (ID: 0222310005101035)
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% -----------------------------
+\section{Introduction}
+This project aims to develop a system to manage university events and club activities efficiently. Students can register for events, view upcoming programs, and admins can create, manage, and approve events.
+
+\section{Purpose}
+The purpose of this system is to:
+\begin{itemize}
+    \item Provide a single platform for students and admins to manage university events and club programs.
+    \item Reduce manual paperwork and improve event registration efficiency.
+    \item Allow students to view, register, and track their participation.
+    \item Allow admins to create, approve, and monitor events and participants.
+\end{itemize}
+
+\section{Scope}
+\subsection{Student Panel}
+\begin{itemize}
+    \item Registration and login
+    \item View upcoming events
+    \item Register for events
+    \item View registered events
+\end{itemize}
+
+\subsection{Admin Panel}
+\begin{itemize}
+    \item Admin login
+    \item Create events (title, date, venue, capacity)
+    \item Approve or reject student registrations
+    \item View participant lists
+\end{itemize}
+
+\subsection{System Constraints / Assumptions}
+\begin{itemize}
+    \item Accessible via modern web browsers (Chrome, Edge, Firefox)
+    \item Internet connection required for online access
+    \item Maximum 200 participants per event
+    \item System hosted on university server / cloud
+\end{itemize}
+
+\section{Actors and Stakeholders}
+\begin{itemize}
+    \item \textbf{Students:} Register/login, browse events, register for events, view participation
+    \item \textbf{Admins:} Create events, approve/reject participants, manage event info
+    \item \textbf{University Staff:} Monitor system performance, view reports
+\end{itemize}
+
+\section{Functional Requirements}
+\subsection{Student Module}
+\begin{enumerate}
+    \item Register and login
+    \item Browse upcoming events
+    \item Register for events
+    \item View registered events and details
+\end{enumerate}
+
+\subsection{Admin Module}
+\begin{enumerate}
+    \item Login
+    \item Create, edit, and delete events
+    \item Approve or reject student registrations
+    \item View participant list per event
+\end{enumerate}
+
+\section{Non-Functional Requirements}
+\begin{itemize}
+    \item Secure login with password protection
+    \item Handle multiple simultaneous users
+    \item Data backed up on GitHub (version control)
+    \item Simple and user-friendly interface
+    \item Fast response time
+\end{itemize}
+
+\end{document}
