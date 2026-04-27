@@ -47,16 +47,16 @@ $categoryStats = $conn->query(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A University Event Management System</title>
+    <title>University Club Event Management</title>
     <link rel="stylesheet" href="student/style.css">
 </head>
 <body class="website-body">
     <header class="site-header">
         <div class="site-shell site-header-inner">
             <a class="brand-row site-brand" href="index.php">
-                <img src="assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
+                <img src="assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
                 <div class="brand-copy">
-                    <strong>University Event Management System</strong>
+                    <strong>University Club Event Management</strong>
                     <span>Events, registration, approvals, reports</span>
                 </div>
             </a>
@@ -69,7 +69,7 @@ $categoryStats = $conn->query(
             </nav>
 
             <div class="nav-actions">
-                <a class="button-link ghost" href="student/login.php">Student Login</a>
+                <a class="button-link ghost" href="student/login.php">Member Login</a>
                 <a class="button-link secondary" href="admin/admin-login.php">Admin Panel</a>
             </div>
         </div>
@@ -80,16 +80,16 @@ $categoryStats = $conn->query(
             <div class="site-shell website-hero-grid">
                 <div class="website-hero-copy">
                     <p class="eyebrow">Academic Event Portal</p>
-                    <h1>A complete University Event Management System.</h1>
+                    <h1>A complete University Club Event Management platform.</h1>
                     <p>
                         Publish campus events, manage registrations, approve participants, track seats,
-                        and give students a clean portal for every workshop, seminar, contest, sports,
+                        and give members a clean portal for every workshop, seminar, contest, sports,
                         and cultural program.
                     </p>
 
                     <div class="hero-actions">
                         <a class="button-link" href="events.php">Explore Events</a>
-                        <a class="button-link ghost" href="student/register.php">Create Student Account</a>
+                        <a class="button-link ghost" href="student/register.php">Create Member Account</a>
                         <a class="button-link secondary" href="admin/admin-login.php">Manage as Admin</a>
                     </div>
                 </div>
@@ -101,9 +101,9 @@ $categoryStats = $conn->query(
                         <p><?= e((string) $stats['registrations']); ?> registration requests tracked in the system.</p>
                     </div>
                     <div class="stage-card">
-                        <span>Student Portal</span>
+                        <span>Member Portal</span>
                         <strong>Search, register, track</strong>
-                        <p>Students can browse events, submit requests, and monitor approval status.</p>
+                        <p>Members can browse events, submit requests, and monitor approval status.</p>
                     </div>
                     <div class="stage-card">
                         <span>Admin Control</span>
@@ -156,7 +156,7 @@ $categoryStats = $conn->query(
             <div class="site-shell">
                 <div class="section-head center-head">
                     <p class="eyebrow">System Modules</p>
-                    <h2>Everything a university event workflow needs</h2>
+                    <h2>Everything a club event workflow needs</h2>
                     <p class="muted">The project now has a real public website, student portal, and admin workspace.</p>
                 </div>
                 <div class="feature-grid module-grid">
@@ -167,8 +167,8 @@ $categoryStats = $conn->query(
                     </article>
                     <article class="feature-card">
                         <span class="feature-icon">02</span>
-                        <h3>Student Portal</h3>
-                        <p>Students can register, search by category, apply for seats, and track approval history.</p>
+                        <h3>Member Portal</h3>
+                        <p>Members can register, search by category, apply for seats, and track approval history.</p>
                     </article>
                     <article class="feature-card">
                         <span class="feature-icon">03</span>
@@ -178,7 +178,7 @@ $categoryStats = $conn->query(
                     <article class="feature-card">
                         <span class="feature-icon">04</span>
                         <h3>Reports & Analytics</h3>
-                        <p>Category performance, seat usage, active students, and pending requests are visible.</p>
+                        <p>Category performance, seat usage, active members, and pending requests are visible.</p>
                     </article>
                 </div>
             </div>
@@ -198,7 +198,7 @@ $categoryStats = $conn->query(
                         </div>
                         <div class="metric-card">
                             <strong><?= e((string) $stats['students']); ?></strong>
-                            <span>Students</span>
+                            <span>Members</span>
                         </div>
                         <div class="metric-card">
                             <strong><?= e((string) $stats['registrations']); ?></strong>
@@ -226,7 +226,7 @@ $categoryStats = $conn->query(
 
     <footer class="footer-band website-footer">
         <div class="site-shell">
-            <span>A University Event Management System</span>
+            <span>University Club Event Management</span>
             <span>PHP, MySQL, HTML, CSS</span>
         </div>
     </footer>

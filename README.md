@@ -1,24 +1,24 @@
-# A University Event Management System
+# University Club Event Management
 
-Raw PHP and MySQL based website and dashboard system for managing university events.
+Raw PHP and MySQL based website and dashboard system for managing club events.
 
 ## Features
 
-- Student registration and login
-- Student profile update and password change
-- Student event dashboard and status tracking
-- Student event search, category filtering, and event detail pages
+- Member registration and login
+- Member profile update and password change
+- Member event dashboard and status tracking
+- Member event search, category filtering, and event detail pages
 - Public website pages for Home, Events, About, Contact, and Event Details
 - Admin login
-- Create university events
+- Create club events
 - Create events with category, time, deadline, capacity, and image upload
 - Edit and delete events
-- Manage student directory
-- Student event registration
+- Manage member directory
+- Member event registration
 - Admin approval or rejection of participants
-- Admin reports for category performance, seat usage, and active students
+- Admin reports for category performance, seat usage, and active members
 - Admin profile update and password change
-- Dashboard summaries for admins and students
+- Dashboard summaries for admins and members
 - CSRF protection for login, registration, profile, event, and approval forms
 - Server-side validation for emails, passwords, dates, capacities, and uploads
 - Event image upload support for JPG, PNG, and WebP files up to 2 MB
@@ -43,7 +43,7 @@ Raw PHP and MySQL based website and dashboard system for managing university eve
 
 ## Database Setup
 
-1. Create a MySQL database named `premier_university_events`
+1. Create a MySQL database named `university_club_events`
 2. Import [`src/database/schema.sql`](/home/saim/6th/EventProject/src/database/schema.sql)
 3. Update database credentials in [`src/backend/db.php`](/home/saim/6th/EventProject/src/backend/db.php) if needed
 
@@ -52,11 +52,11 @@ Default connection values:
 - Host: `localhost`
 - User: `event_app`
 - Password: `event_app_2026`
-- Database: `premier_university_events`
+- Database: `university_club_events`
 
 ## Default Admin Login
 
-- Email: `admin@puc.ac.bd`
+- Email: `admin@club.edu`
 - Password: `admin123`
 
 ## Main Pages
@@ -66,17 +66,16 @@ Default connection values:
 - Public events catalog: `src/events.php`
 - About page: `src/about.php`
 - Contact page: `src/contact.php`
-- Student login: `src/student/login.php`
-- Student registration: `src/student/register.php`
-- Student dashboard: `src/student/dashboard.php`
-- Student event details: `src/student/event-details.php?id=EVENT_ID`
-- Student profile: `src/student/profile.php`
+- Member login: `src/student/login.php`
+- Member registration: `src/student/register.php`
+- Member dashboard: `src/student/dashboard.php`
+- Member event details: `src/student/event-details.php?id=EVENT_ID`
+- Member profile: `src/student/profile.php`
 - Admin login: `src/admin/admin-login.php`
 - Admin dashboard: `src/admin/admin-dashboard.php`
 - Create event: `src/admin/create-event.php`
 - Manage events: `src/admin/manage-events.php`
-- Manage students: `src/admin/manage-students.php`
+- Manage members: `src/admin/manage-students.php`
 - Manage participants: `src/admin/manage-participants.php`
 - Reports: `src/admin/reports.php`
 - Admin profile: `src/admin/profile.php`
-# A-University-Event-Management-System

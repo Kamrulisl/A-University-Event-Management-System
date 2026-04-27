@@ -69,7 +69,7 @@ $studentSummaryStmt->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Events | University Event Management System</title>
+    <title>My Events | University Club Event Management</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="app-page">
@@ -77,14 +77,14 @@ $studentSummaryStmt->close();
         <aside class="sidebar">
             <div>
                 <div class="brand-row">
-                    <img src="../assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
+                    <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
                     <div class="brand-copy">
-                        <strong>University Event Management System</strong>
-                        <span>Student Event Portal</span>
+                        <strong>University Club Event Management</strong>
+                        <span>Member Event Portal</span>
                     </div>
                 </div>
                 <div class="sidebar-card" style="margin-top: 22px;">
-                    <p class="eyebrow">Student Account</p>
+                    <p class="eyebrow">Member Account</p>
                     <div class="profile-meta">
                         <strong><?= e($_SESSION['student_name']); ?></strong>
                         <span><?= e($_SESSION['student_email']); ?></span>
@@ -144,7 +144,7 @@ $studentSummaryStmt->close();
             <section class="panel">
                 <div class="section-head">
                     <h2>Registration Overview</h2>
-                    <p class="muted">A cleaner picture of where you stand across all university events.</p>
+                    <p class="muted">A cleaner picture of where you stand across all club events.</p>
                 </div>
                 <div class="pill-row">
                     <span class="pill">Approved events are ready for participation</span>

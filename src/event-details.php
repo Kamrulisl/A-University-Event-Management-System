@@ -33,16 +33,16 @@ $isDeadlineOpen = $event ? registrationDeadlineOpen($event['registration_deadlin
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $event ? e($event['title']) : 'Event Not Found'; ?> | A University Event Management System</title>
+    <title><?= $event ? e($event['title']) : 'Event Not Found'; ?> | University Club Event Management</title>
     <link rel="stylesheet" href="student/style.css">
 </head>
 <body class="website-body">
     <header class="site-header">
         <div class="site-shell site-header-inner">
             <a class="brand-row site-brand" href="index.php">
-                <img src="assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
+                <img src="assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
                 <div class="brand-copy">
-                    <strong>University Event Management System</strong>
+                    <strong>University Club Event Management</strong>
                     <span>Event details</span>
                 </div>
             </a>
@@ -53,7 +53,7 @@ $isDeadlineOpen = $event ? registrationDeadlineOpen($event['registration_deadlin
                 <a href="contact.php">Contact</a>
             </nav>
             <div class="nav-actions">
-                <a class="button-link ghost" href="student/login.php">Student Login</a>
+                <a class="button-link ghost" href="student/login.php">Member Login</a>
                 <a class="button-link secondary" href="admin/admin-login.php">Admin Panel</a>
             </div>
         </div>

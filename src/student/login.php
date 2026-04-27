@@ -44,44 +44,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Login | University Event Management System</title>
+    <title>Member Login | University Club Event Management</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="auth-page">
-    <div class="auth-card">
-        <div class="brand-block">
+    <main class="auth-shell">
+        <section class="auth-showcase">
             <div class="brand-lockup">
-                <img src="../assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
+                <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo large-logo">
                 <div>
-                    <p class="eyebrow">University Event Management System</p>
-                    <h1>Student Login</h1>
+                    <p class="eyebrow">Member Portal</p>
+                    <h1>University Club Event Management</h1>
                 </div>
             </div>
-            <p class="muted">Sign in to view upcoming events, register quickly, and track approval updates.</p>
-        </div>
+            <p>Discover club events, request seats, follow approvals, and keep your participation history in one place.</p>
+            <div class="auth-benefits">
+                <span>Live event catalog</span>
+                <span>Seat tracking</span>
+                <span>Approval updates</span>
+            </div>
+        </section>
 
-        <?php if ($message !== ''): ?>
-            <div class="alert <?= e($messageType); ?>"><?= e($message); ?></div>
-        <?php endif; ?>
+        <section class="auth-card">
+            <div class="brand-block">
+                <p class="eyebrow">Welcome Back</p>
+                <h2>Member Login</h2>
+                <p class="muted">Sign in to browse club events and manage your registration requests.</p>
+            </div>
 
-        <form method="post" class="stack-form">
-            <?= csrfField(); ?>
-            <label>
-                <span>Email Address</span>
-                <input type="email" name="email" placeholder="student@puc.ac.bd" required>
-            </label>
+            <?php if ($message !== ''): ?>
+                <div class="alert <?= e($messageType); ?>"><?= e($message); ?></div>
+            <?php endif; ?>
 
-            <label>
-                <span>Password</span>
-                <input type="password" name="password" placeholder="Enter password" required>
-            </label>
+            <form method="post" class="stack-form">
+                <?= csrfField(); ?>
+                <label>
+                    <span>Email Address</span>
+                    <input type="email" name="email" placeholder="member@club.edu" autocomplete="email" required>
+                </label>
 
-            <button type="submit">Login</button>
-        </form>
+                <label>
+                    <span>Password</span>
+                    <input type="password" name="password" placeholder="Enter password" autocomplete="current-password" required>
+                </label>
 
-        <p class="switch-link">New here? <a href="register.php">Create a student account</a></p>
-        <p class="switch-link"><a href="../index.php">Back to home</a></p>
-        <p class="switch-link"><a href="../admin/admin-login.php">Admin login</a></p>
-    </div>
+                <button type="submit">Login to Portal</button>
+            </form>
+
+            <div class="auth-links">
+                <span>New member? <a href="register.php">Create account</a></span>
+                <span><a href="../index.php">Back to website</a></span>
+                <span><a href="../admin/admin-login.php">Admin login</a></span>
+            </div>
+        </section>
+    </main>
 </body>
 </html>

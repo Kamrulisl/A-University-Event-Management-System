@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = 'Please enter a valid email address.';
         $messageType = 'error';
     } else {
-        $message = 'Message received. The university event office can review this inquiry.';
+        $message = 'Message received. The club event office can review this inquiry.';
     }
 }
 ?>
@@ -29,16 +29,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact | A University Event Management System</title>
+    <title>Contact | University Club Event Management</title>
     <link rel="stylesheet" href="student/style.css">
 </head>
 <body class="website-body">
     <header class="site-header">
         <div class="site-shell site-header-inner">
             <a class="brand-row site-brand" href="index.php">
-                <img src="assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
+                <img src="assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
                 <div class="brand-copy">
-                    <strong>University Event Management System</strong>
+                    <strong>University Club Event Management</strong>
                     <span>Contact event office</span>
                 </div>
             </a>
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <a href="contact.php" class="active">Contact</a>
             </nav>
             <div class="nav-actions">
-                <a class="button-link ghost" href="student/login.php">Student Login</a>
+                <a class="button-link ghost" href="student/login.php">Member Login</a>
                 <a class="button-link secondary" href="admin/admin-login.php">Admin Panel</a>
             </div>
         </div>
@@ -58,8 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <main class="site-shell page-main">
         <section class="page-title">
             <p class="eyebrow">Contact</p>
-            <h1>Need help with university events or registration?</h1>
-            <p class="muted">Students can ask about registration, event schedules, participant approval, or account access.</p>
+            <h1>Need help with club events or registration?</h1>
+            <p class="muted">Members can ask about registration, event schedules, participant approval, or account access.</p>
         </section>
 
         <div class="panel-grid">
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <span>Sunday to Thursday, 9:00 AM - 5:00 PM</span>
                     </div>
                     <div>
-                        <strong>Student Help</strong>
+                        <strong>Member Help</strong>
                         <span>Login issues, registration status, event seat availability</span>
                     </div>
                     <div>
@@ -124,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <footer class="footer-band website-footer">
         <div class="site-shell">
-            <span>A University Event Management System</span>
+            <span>University Club Event Management</span>
             <span>Contact</span>
         </div>
     </footer>

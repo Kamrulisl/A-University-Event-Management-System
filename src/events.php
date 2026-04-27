@@ -42,16 +42,16 @@ $categories = $conn->query(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Events | A University Event Management System</title>
+    <title>Events | University Club Event Management</title>
     <link rel="stylesheet" href="student/style.css">
 </head>
 <body class="website-body">
     <header class="site-header">
         <div class="site-shell site-header-inner">
             <a class="brand-row site-brand" href="index.php">
-                <img src="assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
+                <img src="assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
                 <div class="brand-copy">
-                    <strong>University Event Management System</strong>
+                    <strong>University Club Event Management</strong>
                     <span>Public event catalog</span>
                 </div>
             </a>
@@ -62,7 +62,7 @@ $categories = $conn->query(
                 <a href="contact.php">Contact</a>
             </nav>
             <div class="nav-actions">
-                <a class="button-link ghost" href="student/login.php">Student Login</a>
+                <a class="button-link ghost" href="student/login.php">Member Login</a>
                 <a class="button-link secondary" href="admin/admin-login.php">Admin Panel</a>
             </div>
         </div>
@@ -71,8 +71,8 @@ $categories = $conn->query(
     <main class="site-shell page-main">
         <section class="page-title">
             <p class="eyebrow">Event Catalog</p>
-            <h1>Find university events and open details before registration.</h1>
-            <p class="muted">Search by event name, venue, description, or category. Students can log in to request a seat.</p>
+            <h1>Find club events and open details before registration.</h1>
+            <p class="muted">Search by event name, venue, description, or category. Members can log in to request a seat.</p>
         </section>
 
         <form method="get" class="filter-bar public-filter">
@@ -133,7 +133,7 @@ $categories = $conn->query(
 
     <footer class="footer-band website-footer">
         <div class="site-shell">
-            <span>A University Event Management System</span>
+            <span>University Club Event Management</span>
             <span>Public Event Catalog</span>
         </div>
     </footer>

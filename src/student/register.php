@@ -57,62 +57,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Registration | University Event Management System</title>
+    <title>Member Registration | University Club Event Management</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="auth-page">
-    <div class="auth-card">
-        <div class="brand-block">
+    <main class="auth-shell register-auth">
+        <section class="auth-showcase">
             <div class="brand-lockup">
-                <img src="../assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
+                <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo large-logo">
                 <div>
-                    <p class="eyebrow">University Event Management System</p>
-                    <h1>Student Registration</h1>
+                    <p class="eyebrow">Join the Portal</p>
+                    <h1>Register once, join any approved club event.</h1>
                 </div>
             </div>
-            <p class="muted">Create your account to register for university events and monitor your participation status.</p>
-        </div>
+            <p>Create your member account to browse events, submit requests, and track approval decisions.</p>
+            <div class="auth-benefits">
+                <span>Club programs</span>
+                <span>Fast registration</span>
+                <span>Status history</span>
+            </div>
+        </section>
 
-        <?php if ($message !== ''): ?>
-            <div class="alert <?= e($messageType); ?>"><?= e($message); ?></div>
-        <?php endif; ?>
-
-        <form method="post" class="stack-form">
-            <?= csrfField(); ?>
-            <div class="inline-grid">
-                <label>
-                    <span>Full Name</span>
-                    <input type="text" name="name" placeholder="Your full name" required>
-                </label>
-
-                <label>
-                    <span>Department</span>
-                    <input type="text" name="department" placeholder="CSE / EEE / BBA" required>
-                </label>
+        <section class="auth-card wide-auth-card">
+            <div class="brand-block">
+                <p class="eyebrow">New Account</p>
+                <h2>Member Registration</h2>
+                <p class="muted">Use your academic details so club admins can review your event requests clearly.</p>
             </div>
 
-            <label>
-                <span>Email Address</span>
-                <input type="email" name="email" placeholder="student@puc.ac.bd" required>
-            </label>
+            <?php if ($message !== ''): ?>
+                <div class="alert <?= e($messageType); ?>"><?= e($message); ?></div>
+            <?php endif; ?>
 
-            <div class="inline-grid">
+            <form method="post" class="stack-form">
+                <?= csrfField(); ?>
+                <div class="inline-grid">
+                    <label>
+                        <span>Full Name</span>
+                        <input type="text" name="name" placeholder="Your full name" autocomplete="name" required>
+                    </label>
+
+                    <label>
+                        <span>Department / Club</span>
+                        <input type="text" name="department" placeholder="CSE / Debate Club / Business Club" required>
+                    </label>
+                </div>
+
                 <label>
-                    <span>Password</span>
-                    <input type="password" name="password" placeholder="Create password" minlength="6" required>
+                    <span>Email Address</span>
+                    <input type="email" name="email" placeholder="member@club.edu" autocomplete="email" required>
                 </label>
 
-                <label>
-                    <span>Confirm Password</span>
-                    <input type="password" name="confirm_password" placeholder="Repeat password" minlength="6" required>
-                </label>
+                <div class="inline-grid">
+                    <label>
+                        <span>Password</span>
+                        <input type="password" name="password" placeholder="Create password" minlength="6" autocomplete="new-password" required>
+                    </label>
+
+                    <label>
+                        <span>Confirm Password</span>
+                        <input type="password" name="confirm_password" placeholder="Repeat password" minlength="6" autocomplete="new-password" required>
+                    </label>
+                </div>
+
+                <button type="submit">Create Member Account</button>
+            </form>
+
+            <div class="auth-links">
+                <span>Already registered? <a href="login.php">Back to login</a></span>
+                <span><a href="../index.php">Back to website</a></span>
             </div>
-
-            <button type="submit">Register</button>
-        </form>
-
-        <p class="switch-link">Already registered? <a href="login.php">Back to login</a></p>
-        <p class="switch-link"><a href="../index.php">Back to home</a></p>
-    </div>
+        </section>
+    </main>
 </body>
 </html>

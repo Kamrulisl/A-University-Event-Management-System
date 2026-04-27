@@ -24,7 +24,7 @@ $studentSummary = $conn->query(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Students | University Event Management System</title>
+    <title>Manage Members | University Club Event Management</title>
     <link rel="stylesheet" href="../student/style.css">
 </head>
 <body class="app-page">
@@ -32,9 +32,9 @@ $studentSummary = $conn->query(
         <aside class="sidebar">
             <div>
                 <div class="brand-row">
-                    <img src="../assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
+                    <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
                     <div class="brand-copy">
-                        <strong>University Event Management System</strong>
+                        <strong>University Club Event Management</strong>
                         <span>Admin Event Control</span>
                     </div>
                 </div>
@@ -44,7 +44,7 @@ $studentSummary = $conn->query(
                     <a href="admin-dashboard.php">Dashboard</a>
                     <a href="create-event.php">Create Event</a>
                     <a href="manage-events.php">Manage Events</a>
-                    <a href="manage-students.php" class="active">Students</a>
+                    <a href="manage-students.php" class="active">Members</a>
                     <a href="manage-participants.php">Participants</a>
                     <a href="reports.php">Reports</a>
                     <a href="profile.php">Admin Profile</a>
@@ -57,16 +57,16 @@ $studentSummary = $conn->query(
         <main class="content">
             <section class="topbar">
                 <div>
-                    <h1>Student Management</h1>
-                    <p class="muted">Review registered students and monitor their event participation activity.</p>
+                    <h1>Member Management</h1>
+                    <p class="muted">Review registered club members and monitor their event participation activity.</p>
                 </div>
             </section>
 
             <section class="stats-grid">
                 <article class="stat-card">
-                    <span>Total Students</span>
+                    <span>Total Members</span>
                     <strong><?= e((string) ((int) ($studentSummary['total_students'] ?? 0))); ?></strong>
-                    <small>Student accounts in the system</small>
+                    <small>Member accounts in the system</small>
                 </article>
                 <article class="stat-card">
                     <span>Departments</span>
@@ -75,8 +75,8 @@ $studentSummary = $conn->query(
                 </article>
                 <article class="stat-card">
                     <span>Admin View</span>
-                    <strong>PUC</strong>
-                    <small>Student participation directory</small>
+                    <strong>CLUB</strong>
+                    <small>Member participation directory</small>
                 </article>
                 <article class="stat-card">
                     <span>Status</span>
@@ -87,8 +87,8 @@ $studentSummary = $conn->query(
 
             <section class="panel">
                 <div class="section-head">
-                    <h2>Student Directory</h2>
-                    <p class="muted">Each row shows the student profile and registration performance summary.</p>
+                    <h2>Member Directory</h2>
+                    <p class="muted">Each row shows the member profile and registration performance summary.</p>
                 </div>
                 <div class="table-wrap">
                     <table>
@@ -105,7 +105,7 @@ $studentSummary = $conn->query(
                         <tbody>
                             <?php if (!$students || $students->num_rows === 0): ?>
                                 <tr>
-                                    <td colspan="6">No student accounts found.</td>
+                                    <td colspan="6">No member accounts found.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php while ($student = $students->fetch_assoc()): ?>

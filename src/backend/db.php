@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 $dbHost = 'localhost';
 $dbUser = 'event_app';
 $dbPass = 'event_app_2026';
-$dbName = 'premier_university_events';
+$dbName = 'university_club_events';
 
 $conn = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 
@@ -129,7 +129,7 @@ function eventImageUrl(?string $path, string $prefix = ''): string
         return e($prefix . ltrim($cleanPath, '/'));
     }
 
-    return e($prefix . 'assets/images/puc_logo.png');
+    return e($prefix . 'assets/images/club_logo.svg');
 }
 
 function storeEventImage(array $file, string $uploadDir, string $publicPrefix): ?string

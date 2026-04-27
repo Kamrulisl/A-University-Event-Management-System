@@ -54,7 +54,7 @@ $topStudents = $conn->query(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports | University Event Management System</title>
+    <title>Reports | University Club Event Management</title>
     <link rel="stylesheet" href="../student/style.css">
 </head>
 <body class="app-page">
@@ -62,9 +62,9 @@ $topStudents = $conn->query(
         <aside class="sidebar">
             <div>
                 <div class="brand-row">
-                    <img src="../assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
+                    <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
                     <div class="brand-copy">
-                        <strong>University Event Management System</strong>
+                        <strong>University Club Event Management</strong>
                         <span>Admin Event Control</span>
                     </div>
                 </div>
@@ -82,7 +82,7 @@ $topStudents = $conn->query(
                     <a href="admin-dashboard.php">Dashboard</a>
                     <a href="create-event.php">Create Event</a>
                     <a href="manage-events.php">Manage Events</a>
-                    <a href="manage-students.php">Students</a>
+                    <a href="manage-students.php">Members</a>
                     <a href="manage-participants.php">Participants</a>
                     <a href="reports.php" class="active">Reports</a>
                     <a href="profile.php">Admin Profile</a>
@@ -111,7 +111,7 @@ $topStudents = $conn->query(
                     <small>Published programs</small>
                 </article>
                 <article class="stat-card">
-                    <span>Total Students</span>
+                    <span>Total Members</span>
                     <strong><?= e((string) $summary['students']); ?></strong>
                     <small>Registered accounts</small>
                 </article>
@@ -152,12 +152,12 @@ $topStudents = $conn->query(
 
                 <section class="panel">
                     <div class="section-head">
-                        <h2>Most Active Students</h2>
-                        <p class="muted">Students with the highest event request activity.</p>
+                        <h2>Most Active Members</h2>
+                        <p class="muted">Members with the highest event request activity.</p>
                     </div>
                     <div class="list-stack">
                         <?php if (!$topStudents || $topStudents->num_rows === 0): ?>
-                            <div class="empty-state">No student activity yet.</div>
+                            <div class="empty-state">No member activity yet.</div>
                         <?php else: ?>
                             <?php while ($student = $topStudents->fetch_assoc()): ?>
                                 <div class="list-item">

@@ -49,7 +49,7 @@ $recentRegistrations = $conn->query(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | University Event Management System</title>
+    <title>Admin Dashboard | University Club Event Management</title>
     <link rel="stylesheet" href="../student/style.css">
 </head>
 <body class="app-page">
@@ -57,9 +57,9 @@ $recentRegistrations = $conn->query(
         <aside class="sidebar">
             <div>
                 <div class="brand-row">
-                    <img src="../assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
+                    <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
                     <div class="brand-copy">
-                        <strong>University Event Management System</strong>
+                        <strong>University Club Event Management</strong>
                         <span>Admin Event Control</span>
                     </div>
                 </div>
@@ -77,7 +77,7 @@ $recentRegistrations = $conn->query(
                     <a href="admin-dashboard.php" class="active">Dashboard</a>
                     <a href="create-event.php">Create Event</a>
                     <a href="manage-events.php">Manage Events</a>
-                    <a href="manage-students.php">Students</a>
+                    <a href="manage-students.php">Members</a>
                     <a href="manage-participants.php">Participants</a>
                     <a href="reports.php">Reports</a>
                     <a href="profile.php">Admin Profile</a>
@@ -105,7 +105,7 @@ $recentRegistrations = $conn->query(
                     <strong><?= e((string) $stats['events']); ?></strong>
                 </article>
                 <article class="stat-card">
-                    <span>Total Students</span>
+                    <span>Total Members</span>
                     <strong><?= e((string) $stats['students']); ?></strong>
                 </article>
                 <article class="stat-card">
@@ -167,13 +167,13 @@ $recentRegistrations = $conn->query(
                         <div class="list-item">
                             <div>
                                 <strong>Review registration requests</strong>
-                                <span>Approve or reject students for each event.</span>
+                                <span>Approve or reject members for each event.</span>
                             </div>
                             <a class="button-link ghost" href="manage-participants.php">Open</a>
                         </div>
                         <div class="list-item">
                             <div>
-                                <strong>Edit events and manage students</strong>
+                                <strong>Edit events and manage members</strong>
                                 <span>Keep event data and student records organized.</span>
                             </div>
                             <a class="button-link secondary" href="manage-events.php">Open</a>
@@ -184,7 +184,7 @@ $recentRegistrations = $conn->query(
                 <section class="quick-card">
                     <div class="section-head">
                         <h2>Recent Registrations</h2>
-                        <p class="muted">Latest student activity in the system.</p>
+                        <p class="muted">Latest member activity in the system.</p>
                     </div>
                     <div class="list-stack">
                         <?php if (!$recentRegistrations || $recentRegistrations->num_rows === 0): ?>

@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS premier_university_events;
-USE premier_university_events;
+CREATE DATABASE IF NOT EXISTS university_club_events;
+USE university_club_events;
 
 CREATE TABLE IF NOT EXISTS admins (
     admin_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -47,19 +47,19 @@ CREATE TABLE IF NOT EXISTS registrations (
 );
 
 INSERT INTO admins (name, email, password)
-SELECT 'System Admin', 'admin@puc.ac.bd', '$2y$10$7A0h539bPk8aP0yb./DupuBjlzms9yeQ5dBZF5mGVQM8LVNhX5uca'
+SELECT 'Club Admin', 'admin@club.edu', '$2y$10$7A0h539bPk8aP0yb./DupuBjlzms9yeQ5dBZF5mGVQM8LVNhX5uca'
 WHERE NOT EXISTS (
-    SELECT 1 FROM admins WHERE email = 'admin@puc.ac.bd'
+    SELECT 1 FROM admins WHERE email = 'admin@club.edu'
 );
 
 INSERT INTO events (title, description, image_path, category, event_date, event_time, registration_deadline, venue, capacity, created_by)
-SELECT 'Programming Contest', 'Inter-department problem solving contest for university students.', 'assets/images/puc_logo.png', 'Competition', '2026-05-15', '10:00:00', '2026-05-12', 'Main Auditorium', 200, 1
+SELECT 'Programming Contest', 'Inter-department problem solving contest for club members.', 'assets/images/club_logo.svg', 'Competition', '2026-05-15', '10:00:00', '2026-05-12', 'Main Auditorium', 200, 1
 WHERE NOT EXISTS (
     SELECT 1 FROM events WHERE title = 'Programming Contest' AND event_date = '2026-05-15'
 );
 
 INSERT INTO events (title, description, image_path, category, event_date, event_time, registration_deadline, venue, capacity, created_by)
-SELECT 'AI Workshop', 'Hands-on workshop on practical AI tools and project ideas.', 'assets/images/puc_logo.png', 'Workshop', '2026-05-22', '14:30:00', '2026-05-19', 'CSE Lab 3', 120, 1
+SELECT 'AI Workshop', 'Hands-on workshop on practical AI tools and project ideas.', 'assets/images/club_logo.svg', 'Workshop', '2026-05-22', '14:30:00', '2026-05-19', 'CSE Lab 3', 120, 1
 WHERE NOT EXISTS (
     SELECT 1 FROM events WHERE title = 'AI Workshop' AND event_date = '2026-05-22'
 );

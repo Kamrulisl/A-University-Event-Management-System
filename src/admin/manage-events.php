@@ -126,7 +126,7 @@ $events = $conn->query(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Events | University Event Management System</title>
+    <title>Manage Events | University Club Event Management</title>
     <link rel="stylesheet" href="../student/style.css">
 </head>
 <body class="app-page">
@@ -134,9 +134,9 @@ $events = $conn->query(
         <aside class="sidebar">
             <div>
                 <div class="brand-row">
-                    <img src="../assets/images/puc_logo.png" alt="University Event Management System Logo" class="brand-logo">
+                    <img src="../assets/images/club_logo.svg" alt="University Club Event Management Logo" class="brand-logo">
                     <div class="brand-copy">
-                        <strong>University Event Management System</strong>
+                        <strong>University Club Event Management</strong>
                         <span>Admin Event Control</span>
                     </div>
                 </div>
@@ -146,7 +146,7 @@ $events = $conn->query(
                     <a href="admin-dashboard.php">Dashboard</a>
                     <a href="create-event.php">Create Event</a>
                     <a href="manage-events.php" class="active">Manage Events</a>
-                    <a href="manage-students.php">Students</a>
+                    <a href="manage-students.php">Members</a>
                     <a href="manage-participants.php">Participants</a>
                     <a href="reports.php">Reports</a>
                     <a href="profile.php">Admin Profile</a>
