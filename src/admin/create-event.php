@@ -8,7 +8,10 @@ $messageType = 'error';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
+    $category = trim($_POST['category'] ?? 'General');
     $eventDate = $_POST['event_date'] ?? '';
+    $eventTime = trim($_POST['event_time'] ?? '');
+    $registrationDeadline = trim($_POST['registration_deadline'] ?? '');
     $venue = trim($_POST['venue'] ?? '');
     $capacity = (int) ($_POST['capacity'] ?? 0);
     $adminId = (int) $_SESSION['admin_id'];
@@ -20,18 +23,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = 'Invalid form request. Please try again.';
     } elseif ($title === '' || $venue === '') {
         $message = 'Title and venue are required.';
+    } elseif ($category === '') {
+        $message = 'Category is required.';
     } elseif (!isValidDate($eventDate)) {
         $message = 'Please select a valid event date.';
+    } elseif (!isValidTime($eventTime)) {
+        $message = 'Please select a valid event time.';
+    } elseif ($registrationDeadline !== '' && !isValidDate($registrationDeadline)) {
+        $message = 'Please select a valid registration deadline.';
+    } elseif ($registrationDeadline !== '' && strtotime($registrationDeadline) > strtotime($eventDate)) {
+        $message = 'Registration deadline cannot be after the event date.';
     } elseif ($capacity < 1 || $capacity > 500) {
         $message = 'Capacity must be between 1 and 500.';
     } elseif ($hasImageUpload && ($imagePath = storeEventImage($imageFile, __DIR__ . '/../assets/uploads', 'assets/uploads')) === null) {
         $message = 'Event image must be a JPG, PNG, or WebP file up to 2 MB.';
     } else {
         $stmt = $conn->prepare(
-            'INSERT INTO events (title, description, image_path, event_date, venue, capacity, created_by)
-             VALUES (?, ?, ?, ?, ?, ?, ?)'
+            'INSERT INTO events (title, description, image_path, category, event_date, event_time, registration_deadline, venue, capacity, created_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
-        $stmt->bind_param('sssssii', $title, $description, $imagePath, $eventDate, $venue, $capacity, $adminId);
+        $eventTimeValue = $eventTime !== '' ? $eventTime : null;
+        $deadlineValue = $registrationDeadline !== '' ? $registrationDeadline : null;
+        $stmt->bind_param(
+            'ssssssssii',
+            $title,
+            $description,
+            $imagePath,
+            $category,
+            $eventDate,
+            $eventTimeValue,
+            $deadlineValue,
+            $venue,
+            $capacity,
+            $adminId
+        );
 
         if ($stmt->execute()) {
             $message = 'Event created successfully.';
@@ -45,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $eventList = $conn->query(
-    'SELECT title, image_path, event_date, venue, capacity
+    'SELECT title, image_path, category, event_date, event_time, registration_deadline, venue, capacity
      FROM events
      ORDER BY event_date DESC'
 );
@@ -78,6 +103,7 @@ $eventList = $conn->query(
                     <a href="manage-events.php">Manage Events</a>
                     <a href="manage-students.php">Students</a>
                     <a href="manage-participants.php">Participants</a>
+                    <a href="reports.php">Reports</a>
                     <a href="profile.php">Admin Profile</a>
                     <a href="../index.php">Home</a>
                     <a href="../backend/logout.php?admin=1">Logout</a>
@@ -121,6 +147,18 @@ $eventList = $conn->query(
                         </label>
 
                         <label>
+                            <span>Category</span>
+                            <select name="category" required>
+                                <option value="General">General</option>
+                                <option value="Workshop">Workshop</option>
+                                <option value="Competition">Competition</option>
+                                <option value="Seminar">Seminar</option>
+                                <option value="Cultural">Cultural</option>
+                                <option value="Sports">Sports</option>
+                            </select>
+                        </label>
+
+                        <label>
                             <span>Event Image</span>
                             <input type="file" name="event_image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
                         </label>
@@ -129,6 +167,18 @@ $eventList = $conn->query(
                             <label>
                                 <span>Event Date</span>
                                 <input type="date" name="event_date" required>
+                            </label>
+
+                            <label>
+                                <span>Event Time</span>
+                                <input type="time" name="event_time">
+                            </label>
+                        </div>
+
+                        <div class="inline-grid">
+                            <label>
+                                <span>Registration Deadline</span>
+                                <input type="date" name="registration_deadline">
                             </label>
 
                             <label>
@@ -162,7 +212,8 @@ $eventList = $conn->query(
                                     </div>
                                     <div class="event-body">
                                         <strong><?= e($event['title']); ?></strong>
-                                        <span><?= e(date('d M Y', strtotime($event['event_date']))); ?> | <?= e($event['venue']); ?></span>
+                                        <span><?= e($event['category']); ?> | <?= e(date('d M Y', strtotime($event['event_date']))); ?><?= $event['event_time'] ? ' at ' . e(date('h:i A', strtotime($event['event_time']))) : ''; ?></span>
+                                        <span><?= e($event['venue']); ?><?= $event['registration_deadline'] ? ' | Deadline: ' . e(date('d M Y', strtotime($event['registration_deadline']))) : ''; ?></span>
                                         <span class="status-badge status-pending">Seats: <?= e((string) $event['capacity']); ?></span>
                                     </div>
                                 </article>

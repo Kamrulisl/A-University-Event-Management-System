@@ -109,6 +109,7 @@ if ($participantStatsQuery) {
                     <a href="manage-events.php">Manage Events</a>
                     <a href="manage-students.php">Students</a>
                     <a href="manage-participants.php" class="active">Participants</a>
+                    <a href="reports.php">Reports</a>
                     <a href="profile.php">Admin Profile</a>
                     <a href="../index.php">Home</a>
                     <a href="../backend/logout.php?admin=1">Logout</a>

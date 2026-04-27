@@ -24,8 +24,13 @@ foreach ($statQueries as $key => $query) {
 }
 
 $recentEvents = $conn->query(
-    'SELECT title, image_path, event_date, venue, capacity
-     FROM events
+    'SELECT e.event_id, e.title, e.image_path, e.category, e.event_date, e.event_time, e.registration_deadline,
+            e.venue, e.capacity,
+            COUNT(CASE WHEN r.status IN ("pending", "approved") THEN 1 END) AS total_registered
+     FROM events e
+     LEFT JOIN registrations r ON r.event_id = e.event_id
+     GROUP BY e.event_id, e.title, e.image_path, e.category, e.event_date, e.event_time,
+              e.registration_deadline, e.venue, e.capacity
      ORDER BY event_date ASC
      LIMIT 5'
 );
@@ -74,6 +79,7 @@ $recentRegistrations = $conn->query(
                     <a href="manage-events.php">Manage Events</a>
                     <a href="manage-students.php">Students</a>
                     <a href="manage-participants.php">Participants</a>
+                    <a href="reports.php">Reports</a>
                     <a href="profile.php">Admin Profile</a>
                     <a href="../index.php">Home</a>
                     <a href="../backend/logout.php?admin=1">Logout</a>
@@ -129,9 +135,13 @@ $recentRegistrations = $conn->query(
                                 <div class="event-body">
                                     <h3><?= e($event['title']); ?></h3>
                                     <div class="meta-list">
-                                        <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?></span>
+                                        <span>Category: <?= e($event['category']); ?></span>
+                                        <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?><?= $event['event_time'] ? ' at ' . e(date('h:i A', strtotime($event['event_time']))) : ''; ?></span>
                                         <span>Venue: <?= e($event['venue']); ?></span>
-                                        <span>Capacity: <?= e((string) $event['capacity']); ?></span>
+                                        <span>Seats: <?= e((string) $event['total_registered']); ?> / <?= e((string) $event['capacity']); ?></span>
+                                        <?php if ($event['registration_deadline']): ?>
+                                            <span>Deadline: <?= e(date('d M Y', strtotime($event['registration_deadline']))); ?></span>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </article>

@@ -21,8 +21,13 @@ foreach ($statQueries as $key => $query) {
 }
 
 $featuredEvents = $conn->query(
-    'SELECT title, description, image_path, event_date, venue, capacity
-     FROM events
+    'SELECT e.event_id, e.title, e.description, e.image_path, e.category, e.event_date, e.event_time,
+            e.registration_deadline, e.venue, e.capacity,
+            COUNT(CASE WHEN r.status IN ("pending", "approved") THEN 1 END) AS total_registered
+     FROM events e
+     LEFT JOIN registrations r ON r.event_id = e.event_id
+     GROUP BY e.event_id, e.title, e.description, e.image_path, e.category, e.event_date,
+              e.event_time, e.registration_deadline, e.venue, e.capacity
      ORDER BY event_date ASC
      LIMIT 3'
 );
@@ -109,10 +114,14 @@ $featuredEvents = $conn->query(
                                         <div class="event-body">
                                             <strong><?= e($event['title']); ?></strong>
                                             <div class="hero-event-meta">
-                                                <span><?= e(date('d M Y', strtotime($event['event_date']))); ?></span>
+                                                <span><?= e($event['category']); ?> | <?= e(date('d M Y', strtotime($event['event_date']))); ?><?= $event['event_time'] ? ' at ' . e(date('h:i A', strtotime($event['event_time']))) : ''; ?></span>
                                                 <span><?= e($event['venue']); ?></span>
-                                                <span>Capacity: <?= e((string) $event['capacity']); ?></span>
+                                                <span>Seats left: <?= e((string) max((int) $event['capacity'] - (int) $event['total_registered'], 0)); ?> / <?= e((string) $event['capacity']); ?></span>
+                                                <?php if ($event['registration_deadline']): ?>
+                                                    <span>Deadline: <?= e(date('d M Y', strtotime($event['registration_deadline']))); ?></span>
+                                                <?php endif; ?>
                                             </div>
+                                            <a class="button-link ghost small-btn" href="event-details.php?id=<?= e((string) $event['event_id']); ?>">View Details</a>
                                         </div>
                                     </article>
                                 <?php endwhile; ?>

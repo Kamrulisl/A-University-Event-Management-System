@@ -5,6 +5,8 @@ requireStudentAuth();
 $message = '';
 $messageType = 'success';
 $studentId = (int) $_SESSION['student_id'];
+$search = trim($_GET['search'] ?? '');
+$categoryFilter = trim($_GET['category'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
     $eventId = (int) $_POST['event_id'];
@@ -14,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
         $messageType = 'error';
     } else {
         $capacityStmt = $conn->prepare(
-            'SELECT e.capacity,
+            'SELECT e.capacity, e.registration_deadline,
                     (SELECT COUNT(*) FROM registrations r WHERE r.event_id = e.event_id AND r.status IN ("pending", "approved")) AS total_registered
              FROM events e
              WHERE e.event_id = ? LIMIT 1'
@@ -29,6 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
             $messageType = 'error';
         } elseif ((int) $capacityData['total_registered'] >= (int) $capacityData['capacity']) {
             $message = 'This event is already full.';
+            $messageType = 'error';
+        } elseif (!registrationDeadlineOpen($capacityData['registration_deadline'] ?? null)) {
+            $message = 'Registration deadline for this event has passed.';
             $messageType = 'error';
         } else {
             $registerStmt = $conn->prepare('INSERT IGNORE INTO registrations (student_id, event_id) VALUES (?, ?)');
@@ -48,7 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
 }
 
 $eventsQuery = '
-    SELECT e.event_id, e.title, e.description, e.image_path, e.event_date, e.venue, e.capacity,
+    SELECT e.event_id, e.title, e.description, e.image_path, e.category, e.event_date, e.event_time,
+           e.registration_deadline, e.venue, e.capacity,
            COUNT(r.registration_id) AS total_registered,
            MAX(CASE WHEN my.student_id IS NOT NULL THEN my.status ELSE NULL END) AS my_status
     FROM events e
@@ -58,14 +64,35 @@ $eventsQuery = '
     LEFT JOIN registrations my
         ON my.event_id = e.event_id
         AND my.student_id = ?
-    GROUP BY e.event_id, e.title, e.description, e.image_path, e.event_date, e.venue, e.capacity
+    WHERE (? = "" OR e.title LIKE ? OR e.description LIKE ? OR e.venue LIKE ? OR e.category LIKE ?)
+      AND (? = "" OR e.category = ?)
+    GROUP BY e.event_id, e.title, e.description, e.image_path, e.category, e.event_date,
+             e.event_time, e.registration_deadline, e.venue, e.capacity
     ORDER BY e.event_date ASC
 ';
 
 $eventsStmt = $conn->prepare($eventsQuery);
-$eventsStmt->bind_param('i', $studentId);
+$searchLike = '%' . $search . '%';
+$eventsStmt->bind_param(
+    'isssssss',
+    $studentId,
+    $search,
+    $searchLike,
+    $searchLike,
+    $searchLike,
+    $searchLike,
+    $categoryFilter,
+    $categoryFilter
+);
 $eventsStmt->execute();
 $events = $eventsStmt->get_result();
+
+$categories = $conn->query(
+    'SELECT DISTINCT category
+     FROM events
+     WHERE category IS NOT NULL AND category != ""
+     ORDER BY category ASC'
+);
 
 $myRegistrationsStmt = $conn->prepare(
     'SELECT e.title, e.event_date, e.venue, r.status
@@ -210,17 +237,43 @@ $upcomingSummaryStmt->close();
             <div class="panel-grid">
                 <section class="panel">
                     <div class="section-head">
-                        <h2>Upcoming Events</h2>
-                        <p class="muted">Available university events with current seat status.</p>
+                    <h2>Upcoming Events</h2>
+                        <p class="muted">Search events by title, venue, or category and open the full event page before registering.</p>
                     </div>
 
+                    <form method="get" class="filter-bar">
+                        <label>
+                            <span>Search</span>
+                            <input type="search" name="search" value="<?= e($search); ?>" placeholder="Search events, venue, category">
+                        </label>
+                        <label>
+                            <span>Category</span>
+                            <select name="category">
+                                <option value="">All categories</option>
+                                <?php if ($categories): ?>
+                                    <?php while ($category = $categories->fetch_assoc()): ?>
+                                        <option value="<?= e($category['category']); ?>" <?= $categoryFilter === $category['category'] ? 'selected' : ''; ?>><?= e($category['category']); ?></option>
+                                    <?php endwhile; ?>
+                                <?php endif; ?>
+                            </select>
+                        </label>
+                        <div class="filter-actions">
+                            <button type="submit">Apply</button>
+                            <a class="button-link ghost" href="dashboard.php">Reset</a>
+                        </div>
+                    </form>
+
                     <div class="showcase-grid">
+                        <?php if (!$events || $events->num_rows === 0): ?>
+                            <div class="empty-state">No events matched your search.</div>
+                        <?php else: ?>
                         <?php while ($event = $events->fetch_assoc()): ?>
                             <?php
                             $totalRegistered = (int) $event['total_registered'];
                             $capacity = (int) $event['capacity'];
                             $remaining = max($capacity - $totalRegistered, 0);
                             $myStatus = $event['my_status'];
+                            $isDeadlineOpen = registrationDeadlineOpen($event['registration_deadline'] ?? null);
                             ?>
                             <article class="event-media-card">
                                 <div class="event-thumb">
@@ -230,25 +283,35 @@ $upcomingSummaryStmt->close();
                                     <h3><?= e($event['title']); ?></h3>
                                     <p><?= e($event['description'] ?? 'No description added yet.'); ?></p>
                                     <div class="meta-list">
-                                        <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?></span>
+                                        <span>Category: <?= e($event['category']); ?></span>
+                                        <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?><?= $event['event_time'] ? ' at ' . e(date('h:i A', strtotime($event['event_time']))) : ''; ?></span>
                                         <span>Venue: <?= e($event['venue']); ?></span>
                                         <span>Seats Left: <?= e((string) $remaining); ?> / <?= e((string) $capacity); ?></span>
+                                        <?php if ($event['registration_deadline']): ?>
+                                            <span>Deadline: <?= e(date('d M Y', strtotime($event['registration_deadline']))); ?></span>
+                                        <?php endif; ?>
                                     </div>
 
-                                    <?php if ($myStatus !== null): ?>
-                                        <span class="status-badge status-<?= e($myStatus); ?>"><?= e(ucfirst($myStatus)); ?></span>
-                                    <?php elseif ($remaining > 0): ?>
-                                        <form method="post">
-                                            <?= csrfField(); ?>
-                                            <input type="hidden" name="event_id" value="<?= e((string) $event['event_id']); ?>">
-                                            <button type="submit">Register Now</button>
-                                        </form>
-                                    <?php else: ?>
-                                        <span class="status-badge status-rejected">Full</span>
-                                    <?php endif; ?>
+                                    <div class="table-actions">
+                                        <a class="button-link ghost small-btn" href="event-details.php?id=<?= e((string) $event['event_id']); ?>">Details</a>
+                                        <?php if ($myStatus !== null): ?>
+                                            <span class="status-badge status-<?= e($myStatus); ?>"><?= e(ucfirst($myStatus)); ?></span>
+                                        <?php elseif (!$isDeadlineOpen): ?>
+                                            <span class="status-badge status-rejected">Closed</span>
+                                        <?php elseif ($remaining > 0): ?>
+                                            <form method="post">
+                                                <?= csrfField(); ?>
+                                                <input type="hidden" name="event_id" value="<?= e((string) $event['event_id']); ?>">
+                                                <button type="submit" class="small-btn">Register</button>
+                                            </form>
+                                        <?php else: ?>
+                                            <span class="status-badge status-rejected">Full</span>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                             </article>
                         <?php endwhile; ?>
+                        <?php endif; ?>
                     </div>
                 </section>
 

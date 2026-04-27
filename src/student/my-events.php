@@ -34,7 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $registrationsStmt = $conn->prepare(
     'SELECT r.registration_id, r.status, r.registered_at,
-            e.title, e.description, e.image_path, e.event_date, e.venue, e.capacity
+            e.event_id, e.title, e.description, e.image_path, e.category, e.event_date, e.event_time,
+            e.registration_deadline, e.venue, e.capacity
      FROM registrations r
      INNER JOIN events e ON e.event_id = r.event_id
      WHERE r.student_id = ?
@@ -171,10 +172,13 @@ $studentSummaryStmt->close();
                                     <p><?= e($registration['description'] ?: 'No description available.'); ?></p>
                                     <div class="meta-list">
                                         <span>Date: <?= e(date('d M Y', strtotime($registration['event_date']))); ?></span>
+                                        <span>Category: <?= e($registration['category']); ?></span>
+                                        <span>Time: <?= $registration['event_time'] ? e(date('h:i A', strtotime($registration['event_time']))) : 'TBA'; ?></span>
                                         <span>Venue: <?= e($registration['venue']); ?></span>
                                         <span>Requested: <?= e(date('d M Y', strtotime($registration['registered_at']))); ?></span>
                                     </div>
                                     <div class="table-actions">
+                                        <a class="button-link ghost small-btn" href="event-details.php?id=<?= e((string) $registration['event_id']); ?>">Details</a>
                                         <span class="status-badge status-<?= e($registration['status']); ?>"><?= e(ucfirst($registration['status'])); ?></span>
                                         <?php if ($registration['status'] === 'pending'): ?>
                                             <form method="post" class="mini-form">

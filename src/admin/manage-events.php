@@ -31,7 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $eventId = (int) ($_POST['event_id'] ?? 0);
         $title = trim($_POST['title'] ?? '');
         $description = trim($_POST['description'] ?? '');
+        $category = trim($_POST['category'] ?? 'General');
         $eventDate = $_POST['event_date'] ?? '';
+        $eventTime = trim($_POST['event_time'] ?? '');
+        $registrationDeadline = trim($_POST['registration_deadline'] ?? '');
         $venue = trim($_POST['venue'] ?? '');
         $capacity = (int) ($_POST['capacity'] ?? 0);
         $currentImagePath = trim($_POST['current_image_path'] ?? '');
@@ -43,8 +46,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($title === '' || $venue === '') {
             $message = 'Title and venue are required.';
             $messageType = 'error';
+        } elseif ($category === '') {
+            $message = 'Category is required.';
+            $messageType = 'error';
         } elseif (!isValidDate($eventDate)) {
             $message = 'Please select a valid event date.';
+            $messageType = 'error';
+        } elseif (!isValidTime($eventTime)) {
+            $message = 'Please select a valid event time.';
+            $messageType = 'error';
+        } elseif ($registrationDeadline !== '' && !isValidDate($registrationDeadline)) {
+            $message = 'Please select a valid registration deadline.';
+            $messageType = 'error';
+        } elseif ($registrationDeadline !== '' && strtotime($registrationDeadline) > strtotime($eventDate)) {
+            $message = 'Registration deadline cannot be after the event date.';
             $messageType = 'error';
         } elseif ($capacity < 1 || $capacity > 500) {
             $message = 'Capacity must be between 1 and 500.';
@@ -55,10 +70,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $updateStmt = $conn->prepare(
                 'UPDATE events
-                 SET title = ?, description = ?, image_path = ?, event_date = ?, venue = ?, capacity = ?
+                 SET title = ?, description = ?, image_path = ?, category = ?, event_date = ?, event_time = ?, registration_deadline = ?, venue = ?, capacity = ?
                  WHERE event_id = ?'
             );
-            $updateStmt->bind_param('sssssii', $title, $description, $imagePath, $eventDate, $venue, $capacity, $eventId);
+            $eventTimeValue = $eventTime !== '' ? $eventTime : null;
+            $deadlineValue = $registrationDeadline !== '' ? $registrationDeadline : null;
+            $updateStmt->bind_param(
+                'ssssssssii',
+                $title,
+                $description,
+                $imagePath,
+                $category,
+                $eventDate,
+                $eventTimeValue,
+                $deadlineValue,
+                $venue,
+                $capacity,
+                $eventId
+            );
 
             if ($updateStmt->execute()) {
                 $message = 'Event updated successfully.';
@@ -82,11 +111,13 @@ if (isset($_GET['edit'])) {
 }
 
 $events = $conn->query(
-    'SELECT e.event_id, e.title, e.description, e.image_path, e.event_date, e.venue, e.capacity,
+    'SELECT e.event_id, e.title, e.description, e.image_path, e.category, e.event_date, e.event_time,
+            e.registration_deadline, e.venue, e.capacity,
             COUNT(r.registration_id) AS total_registrations
      FROM events e
      LEFT JOIN registrations r ON r.event_id = e.event_id
-     GROUP BY e.event_id, e.title, e.description, e.image_path, e.event_date, e.venue, e.capacity
+     GROUP BY e.event_id, e.title, e.description, e.image_path, e.category, e.event_date,
+              e.event_time, e.registration_deadline, e.venue, e.capacity
      ORDER BY e.event_date ASC'
 );
 ?>
@@ -117,6 +148,7 @@ $events = $conn->query(
                     <a href="manage-events.php" class="active">Manage Events</a>
                     <a href="manage-students.php">Students</a>
                     <a href="manage-participants.php">Participants</a>
+                    <a href="reports.php">Reports</a>
                     <a href="profile.php">Admin Profile</a>
                     <a href="../index.php">Home</a>
                     <a href="../backend/logout.php?admin=1">Logout</a>
@@ -158,10 +190,28 @@ $events = $conn->query(
                             <span>Description</span>
                             <textarea name="description" rows="4"><?= e($editEvent['description'] ?? ''); ?></textarea>
                         </label>
+                        <label>
+                            <span>Category</span>
+                            <select name="category" required>
+                                <?php foreach (['General', 'Workshop', 'Competition', 'Seminar', 'Cultural', 'Sports'] as $categoryOption): ?>
+                                    <option value="<?= e($categoryOption); ?>" <?= ($editEvent['category'] ?? 'General') === $categoryOption ? 'selected' : ''; ?>><?= e($categoryOption); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </label>
                         <div class="inline-grid">
                             <label>
                                 <span>Date</span>
                                 <input type="date" name="event_date" value="<?= e($editEvent['event_date']); ?>" required>
+                            </label>
+                            <label>
+                                <span>Time</span>
+                                <input type="time" name="event_time" value="<?= e(substr((string) ($editEvent['event_time'] ?? ''), 0, 5)); ?>">
+                            </label>
+                        </div>
+                        <div class="inline-grid">
+                            <label>
+                                <span>Registration Deadline</span>
+                                <input type="date" name="registration_deadline" value="<?= e($editEvent['registration_deadline'] ?? ''); ?>">
                             </label>
                             <label>
                                 <span>Capacity</span>
@@ -205,10 +255,14 @@ $events = $conn->query(
                                     <h3><?= e($event['title']); ?></h3>
                                     <p><?= e($event['description'] ?: 'No description available yet.'); ?></p>
                                     <div class="meta-list">
-                                        <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?></span>
+                                        <span>Category: <?= e($event['category']); ?></span>
+                                        <span>Date: <?= e(date('d M Y', strtotime($event['event_date']))); ?><?= $event['event_time'] ? ' at ' . e(date('h:i A', strtotime($event['event_time']))) : ''; ?></span>
                                         <span>Venue: <?= e($event['venue']); ?></span>
                                         <span>Capacity: <?= e((string) $event['capacity']); ?></span>
                                         <span>Registrations: <?= e((string) $event['total_registrations']); ?></span>
+                                        <?php if ($event['registration_deadline']): ?>
+                                            <span>Deadline: <?= e(date('d M Y', strtotime($event['registration_deadline']))); ?></span>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="table-actions">
                                         <a class="button-link ghost small-btn" href="manage-events.php?edit=<?= e((string) $event['event_id']); ?>">Edit</a>

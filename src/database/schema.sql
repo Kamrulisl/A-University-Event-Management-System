@@ -23,7 +23,10 @@ CREATE TABLE IF NOT EXISTS events (
     title VARCHAR(200) NOT NULL,
     description TEXT,
     image_path VARCHAR(255) DEFAULT NULL,
+    category VARCHAR(80) DEFAULT 'General',
     event_date DATE NOT NULL,
+    event_time TIME DEFAULT NULL,
+    registration_deadline DATE DEFAULT NULL,
     venue VARCHAR(150) NOT NULL,
     capacity INT NOT NULL,
     created_by INT DEFAULT NULL,
@@ -49,14 +52,14 @@ WHERE NOT EXISTS (
     SELECT 1 FROM admins WHERE email = 'admin@puc.ac.bd'
 );
 
-INSERT INTO events (title, description, image_path, event_date, venue, capacity, created_by)
-SELECT 'Programming Contest', 'Inter-department problem solving contest for Premier University students.', 'assets/images/puc_logo.png', '2026-05-15', 'Main Auditorium', 200, 1
+INSERT INTO events (title, description, image_path, category, event_date, event_time, registration_deadline, venue, capacity, created_by)
+SELECT 'Programming Contest', 'Inter-department problem solving contest for Premier University students.', 'assets/images/puc_logo.png', 'Competition', '2026-05-15', '10:00:00', '2026-05-12', 'Main Auditorium', 200, 1
 WHERE NOT EXISTS (
     SELECT 1 FROM events WHERE title = 'Programming Contest' AND event_date = '2026-05-15'
 );
 
-INSERT INTO events (title, description, image_path, event_date, venue, capacity, created_by)
-SELECT 'AI Workshop', 'Hands-on workshop on practical AI tools and project ideas.', 'assets/images/puc_logo.png', '2026-05-22', 'CSE Lab 3', 120, 1
+INSERT INTO events (title, description, image_path, category, event_date, event_time, registration_deadline, venue, capacity, created_by)
+SELECT 'AI Workshop', 'Hands-on workshop on practical AI tools and project ideas.', 'assets/images/puc_logo.png', 'Workshop', '2026-05-22', '14:30:00', '2026-05-19', 'CSE Lab 3', 120, 1
 WHERE NOT EXISTS (
     SELECT 1 FROM events WHERE title = 'AI Workshop' AND event_date = '2026-05-22'
 );

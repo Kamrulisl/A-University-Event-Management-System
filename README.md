@@ -7,12 +7,15 @@ Raw PHP and MySQL based university event management system for Premier Universit
 - Student registration and login
 - Student profile update and password change
 - Student event dashboard and status tracking
+- Student event search, category filtering, and event detail pages
 - Admin login
 - Create university events
+- Create events with category, time, deadline, capacity, and image upload
 - Edit and delete events
 - Manage student directory
 - Student event registration
 - Admin approval or rejection of participants
+- Admin reports for category performance, seat usage, and active students
 - Admin profile update and password change
 - Dashboard summaries for admins and students
 - CSRF protection for login, registration, profile, event, and approval forms
@@ -58,9 +61,11 @@ Default connection values:
 ## Main Pages
 
 - Home: `src/index.php`
+- Public event details: `src/event-details.php?id=EVENT_ID`
 - Student login: `src/student/login.php`
 - Student registration: `src/student/register.php`
 - Student dashboard: `src/student/dashboard.php`
+- Student event details: `src/student/event-details.php?id=EVENT_ID`
 - Student profile: `src/student/profile.php`
 - Admin login: `src/admin/admin-login.php`
 - Admin dashboard: `src/admin/admin-dashboard.php`
@@ -68,5 +73,6 @@ Default connection values:
 - Manage events: `src/admin/manage-events.php`
 - Manage students: `src/admin/manage-students.php`
 - Manage participants: `src/admin/manage-participants.php`
+- Reports: `src/admin/reports.php`
 - Admin profile: `src/admin/profile.php`
 # A-University-Event-Management-System

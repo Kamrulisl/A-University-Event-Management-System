@@ -16,21 +16,30 @@ if ($conn->connect_error) {
 
 $conn->set_charset('utf8mb4');
 
-// Keep lightweight schema compatibility for older local databases.
-$columnCheck = $conn->query(
-    "SELECT COUNT(*) AS total
-     FROM information_schema.COLUMNS
-     WHERE TABLE_SCHEMA = '{$dbName}'
-       AND TABLE_NAME = 'events'
-       AND COLUMN_NAME = 'image_path'"
-);
+function ensureColumn(mysqli $conn, string $dbName, string $tableName, string $columnName, string $definition): void
+{
+    $stmt = $conn->prepare(
+        'SELECT COUNT(*) AS total
+         FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = ?
+           AND TABLE_NAME = ?
+           AND COLUMN_NAME = ?'
+    );
+    $stmt->bind_param('sss', $dbName, $tableName, $columnName);
+    $stmt->execute();
+    $columnData = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
 
-if ($columnCheck) {
-    $columnData = $columnCheck->fetch_assoc();
     if ((int) ($columnData['total'] ?? 0) === 0) {
-        $conn->query("ALTER TABLE events ADD COLUMN image_path VARCHAR(255) DEFAULT NULL AFTER description");
+        $conn->query("ALTER TABLE {$tableName} ADD COLUMN {$columnName} {$definition}");
     }
 }
+
+// Keep lightweight schema compatibility for older local databases.
+ensureColumn($conn, $dbName, 'events', 'image_path', 'VARCHAR(255) DEFAULT NULL AFTER description');
+ensureColumn($conn, $dbName, 'events', 'category', "VARCHAR(80) DEFAULT 'General' AFTER image_path");
+ensureColumn($conn, $dbName, 'events', 'event_time', 'TIME DEFAULT NULL AFTER event_date');
+ensureColumn($conn, $dbName, 'events', 'registration_deadline', 'DATE DEFAULT NULL AFTER event_time');
 
 function isStudentLoggedIn(): bool
 {
@@ -92,6 +101,25 @@ function isValidDate(string $date): bool
 {
     $parsedDate = DateTime::createFromFormat('Y-m-d', $date);
     return $parsedDate !== false && $parsedDate->format('Y-m-d') === $date;
+}
+
+function isValidTime(?string $time): bool
+{
+    if ($time === null || $time === '') {
+        return true;
+    }
+
+    $parsedTime = DateTime::createFromFormat('H:i', $time);
+    return $parsedTime !== false && $parsedTime->format('H:i') === $time;
+}
+
+function registrationDeadlineOpen(?string $deadline): bool
+{
+    if ($deadline === null || $deadline === '') {
+        return true;
+    }
+
+    return strtotime($deadline . ' 23:59:59') >= time();
 }
 
 function eventImageUrl(?string $path, string $prefix = ''): string
