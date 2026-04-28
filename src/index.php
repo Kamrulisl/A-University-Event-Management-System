@@ -73,9 +73,8 @@ $categoryStats = $conn->query(
             </nav>
 
             <div class="nav-actions">
-                <a class="button-link ghost" href="student/login.php">Member Login</a>
-                <a class="button-link ghost" href="club-admin/login.php">Club Admin</a>
-                <a class="button-link secondary" href="admin/admin-login.php">Admin Panel</a>
+                <a class="button-link" href="student/login.php">Member Login</a>
+                <a class="button-link ghost" href="student/register.php">Register</a>
             </div>
         </div>
     </header>
@@ -98,8 +97,6 @@ $categoryStats = $conn->query(
                     <div class="hero-actions">
                         <a class="button-link" href="events.php">Explore Events</a>
                         <a class="button-link ghost" href="student/register.php">Create Member Account</a>
-                        <a class="button-link ghost" href="club-admin/login.php">Club Admin Panel</a>
-                        <a class="button-link secondary" href="admin/admin-login.php">Manage as Admin</a>
                     </div>
 
                     <div class="vibe-row" aria-label="Campus highlights">
@@ -143,8 +140,8 @@ $categoryStats = $conn->query(
             <div class="site-shell">
                 <div class="section-head split-head">
                     <div>
-                        <p class="eyebrow">Three Dedicated Panels</p>
-                        <h2>Every user lands in the right workspace</h2>
+                        <p class="eyebrow">Member Portal</p>
+                        <h2>Your campus involvement starts here</h2>
                     </div>
                 </div>
                 <div class="role-entry-grid">
@@ -152,16 +149,6 @@ $categoryStats = $conn->query(
                         <span>01</span>
                         <strong>Member Panel</strong>
                         <p>Join clubs, register for events, track approvals, and manage your profile.</p>
-                    </a>
-                    <a class="role-entry-card club-entry" href="club-admin/login.php">
-                        <span>02</span>
-                        <strong>Club Admin Panel</strong>
-                        <p>Create club events, approve members, review participants, and update club info.</p>
-                    </a>
-                    <a class="role-entry-card admin-entry" href="admin/admin-login.php">
-                        <span>03</span>
-                        <strong>Super Admin Panel</strong>
-                        <p>Manage all clubs, club admins, members, events, reports, and system activity.</p>
                     </a>
                 </div>
             </div>
