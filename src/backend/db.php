@@ -105,7 +105,7 @@ $conn->query(
 $conn->query(
     "INSERT INTO club_admins (club_id, name, email, password)
      SELECT c.club_id, 'Programming Club Admin', 'programming.admin@club.edu',
-            '$2y$10$tTSd18ATcarfpkddMikPte6e3GGTfttYKt7RJlRsv.nOphzRqaroy'
+            '\$2y\$10\$tTSd18ATcarfpkddMikPte6e3GGTfttYKt7RJlRsv.nOphzRqaroy'
      FROM clubs c
      WHERE c.name = 'Computer Programming Club'
        AND NOT EXISTS (SELECT 1 FROM club_admins WHERE email = 'programming.admin@club.edu')"
@@ -113,7 +113,7 @@ $conn->query(
 $conn->query(
     "INSERT INTO club_admins (club_id, name, email, password)
      SELECT c.club_id, 'AI Club Admin', 'ai.admin@club.edu',
-            '$2y$10$tTSd18ATcarfpkddMikPte6e3GGTfttYKt7RJlRsv.nOphzRqaroy'
+            '\$2y\$10\$tTSd18ATcarfpkddMikPte6e3GGTfttYKt7RJlRsv.nOphzRqaroy'
      FROM clubs c
      WHERE c.name = 'AI & Innovation Club'
        AND NOT EXISTS (SELECT 1 FROM club_admins WHERE email = 'ai.admin@club.edu')"

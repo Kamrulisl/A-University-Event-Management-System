@@ -84,12 +84,15 @@ $categoryStats = $conn->query(
         <section class="website-hero">
             <div class="site-shell website-hero-grid">
                 <div class="website-hero-copy">
-                    <p class="eyebrow">Academic Event Portal</p>
-                    <h1>A complete University Club Event Management platform.</h1>
+                    <div class="campus-pulse">
+                        <span class="pulse-dot"></span>
+                        <span>Campus activity live now</span>
+                    </div>
+                    <p class="eyebrow">Premier University Club Hub</p>
+                    <h1>Clubs, events, members, and approvals in one modern campus command center.</h1>
                     <p>
-                        Publish campus events, manage registrations, approve participants, track seats,
-                        and give members a clean portal for every workshop, seminar, contest, sports,
-                        and cultural program.
+                        Run programming contests, AI workshops, cultural nights, seminars, sports meets,
+                        club memberships, event registrations, and approval workflows without messy paperwork.
                     </p>
 
                     <div class="hero-actions">
@@ -98,9 +101,19 @@ $categoryStats = $conn->query(
                         <a class="button-link ghost" href="club-admin/login.php">Club Admin Panel</a>
                         <a class="button-link secondary" href="admin/admin-login.php">Manage as Admin</a>
                     </div>
+
+                    <div class="vibe-row" aria-label="Campus highlights">
+                        <span class="vibe-chip">Club memberships</span>
+                        <span class="vibe-chip">Seat tracking</span>
+                        <span class="vibe-chip">Event approvals</span>
+                        <span class="vibe-chip">Reports</span>
+                    </div>
                 </div>
 
                 <div class="hero-stage" aria-label="System preview">
+                    <div class="stage-window-bar">
+                        <span></span><span></span><span></span>
+                    </div>
                     <div class="stage-card primary-stage">
                         <span>Live Dashboard</span>
                         <strong><?= e((string) $stats['events']); ?> Events</strong>
@@ -116,6 +129,40 @@ $categoryStats = $conn->query(
                         <strong><?= e((string) $stats['approved']); ?> Approved Seats</strong>
                         <p>Admins can review participants and analyze event performance.</p>
                     </div>
+                    <div class="motion-strip" aria-hidden="true">
+                        <span style="--bar: 72%;"></span>
+                        <span style="--bar: 48%;"></span>
+                        <span style="--bar: 88%;"></span>
+                        <span style="--bar: 61%;"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-block role-section">
+            <div class="site-shell">
+                <div class="section-head split-head">
+                    <div>
+                        <p class="eyebrow">Three Dedicated Panels</p>
+                        <h2>Every user lands in the right workspace</h2>
+                    </div>
+                </div>
+                <div class="role-entry-grid">
+                    <a class="role-entry-card member-entry" href="student/login.php">
+                        <span>01</span>
+                        <strong>Member Panel</strong>
+                        <p>Join clubs, register for events, track approvals, and manage your profile.</p>
+                    </a>
+                    <a class="role-entry-card club-entry" href="club-admin/login.php">
+                        <span>02</span>
+                        <strong>Club Admin Panel</strong>
+                        <p>Create club events, approve members, review participants, and update club info.</p>
+                    </a>
+                    <a class="role-entry-card admin-entry" href="admin/admin-login.php">
+                        <span>03</span>
+                        <strong>Super Admin Panel</strong>
+                        <p>Manage all clubs, club admins, members, events, reports, and system activity.</p>
+                    </a>
                 </div>
             </div>
         </section>
@@ -139,16 +186,19 @@ $categoryStats = $conn->query(
                             <article class="event-media-card">
                                 <div class="event-thumb">
                                     <img src="<?= eventImageUrl($event['image_path']); ?>" alt="<?= e($event['title']); ?>">
+                                    <span class="floating-label"><?= e($event['category']); ?></span>
                                 </div>
                                 <div class="event-body">
-                                    <span class="status-badge status-pending"><?= e($event['category']); ?></span>
+                                    <div class="event-card-top">
+                                        <span class="status-badge status-pending"><?= e($event['category']); ?></span>
+                                        <span class="fun-tag"><?= e((string) $remaining); ?> seats left</span>
+                                    </div>
                                     <h3><?= e($event['title']); ?></h3>
                                     <p><?= e($event['description'] ?: 'University event details will appear here.'); ?></p>
                                     <div class="meta-list">
                                         <span><?= e($event['club_name'] ?: 'Unassigned Club'); ?></span>
                                         <span><?= e(date('d M Y', strtotime($event['event_date']))); ?><?= $event['event_time'] ? ' at ' . e(date('h:i A', strtotime($event['event_time']))) : ''; ?></span>
                                         <span><?= e($event['venue']); ?></span>
-                                        <span><?= e((string) $remaining); ?> seats left</span>
                                     </div>
                                     <a class="button-link ghost small-btn" href="event-details.php?id=<?= e((string) $event['event_id']); ?>">View Details</a>
                                 </div>
