@@ -93,6 +93,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
             <div class="auth-links">
                 <span><a href="../student/login.php">Member login</a></span>
+                <span><a href="../club-admin/login.php">Club admin login</a></span>
                 <span><a href="../index.php">Back to website</a></span>
             </div>
         </section>

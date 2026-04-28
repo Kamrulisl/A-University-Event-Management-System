@@ -173,6 +173,7 @@ $upcomingSummaryStmt->close();
             <div>
                 <nav class="nav-links">
                     <a href="dashboard.php" class="active">Dashboard</a>
+                    <a href="my-clubs.php">My Clubs</a>
                     <a href="my-events.php">My Events</a>
                     <a href="profile.php">Profile Settings</a>
                     <a href="../index.php">Home</a>
@@ -189,6 +190,7 @@ $upcomingSummaryStmt->close();
                 </div>
                 <div class="topbar-actions">
                     <a class="button-link" href="my-events.php">My Events</a>
+                    <a class="button-link ghost" href="my-clubs.php">My Clubs</a>
                     <a class="button-link" href="profile.php">My Profile</a>
                     <a class="button-link ghost" href="../index.php">Public Home</a>
                     <a class="button-link secondary" href="../backend/logout.php">Logout</a>

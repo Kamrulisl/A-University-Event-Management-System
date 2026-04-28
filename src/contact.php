@@ -51,6 +51,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             </nav>
             <div class="nav-actions">
                 <a class="button-link ghost" href="student/login.php">Member Login</a>
+                <a class="button-link ghost" href="club-admin/login.php">Club Admin</a>
                 <a class="button-link secondary" href="admin/admin-login.php">Admin Panel</a>
             </div>
         </div>

@@ -30,6 +30,17 @@ CREATE TABLE IF NOT EXISTS clubs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS club_admins (
+    club_admin_id INT AUTO_INCREMENT PRIMARY KEY,
+    club_id INT NOT NULL,
+    name VARCHAR(120) NOT NULL,
+    email VARCHAR(120) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_club_admins_club FOREIGN KEY (club_id) REFERENCES clubs(club_id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS events (
     event_id INT AUTO_INCREMENT PRIMARY KEY,
     club_id INT DEFAULT NULL,
@@ -43,10 +54,12 @@ CREATE TABLE IF NOT EXISTS events (
     venue VARCHAR(150) NOT NULL,
     capacity INT NOT NULL,
     created_by INT DEFAULT NULL,
+    created_by_club_admin INT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_events_capacity CHECK (capacity > 0 AND capacity <= 500),
     CONSTRAINT fk_events_club FOREIGN KEY (club_id) REFERENCES clubs(club_id) ON DELETE SET NULL,
-    CONSTRAINT fk_events_admin FOREIGN KEY (created_by) REFERENCES admins(admin_id) ON DELETE SET NULL
+    CONSTRAINT fk_events_admin FOREIGN KEY (created_by) REFERENCES admins(admin_id) ON DELETE SET NULL,
+    CONSTRAINT fk_events_club_admin FOREIGN KEY (created_by_club_admin) REFERENCES club_admins(club_admin_id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS registrations (
@@ -58,6 +71,18 @@ CREATE TABLE IF NOT EXISTS registrations (
     CONSTRAINT uq_student_event UNIQUE (student_id, event_id),
     CONSTRAINT fk_registrations_student FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
     CONSTRAINT fk_registrations_event FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS club_memberships (
+    membership_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    club_id INT NOT NULL,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    decided_at TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT uq_student_club UNIQUE (student_id, club_id),
+    CONSTRAINT fk_memberships_student FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+    CONSTRAINT fk_memberships_club FOREIGN KEY (club_id) REFERENCES clubs(club_id) ON DELETE CASCADE
 );
 
 INSERT INTO admins (name, email, password)
@@ -78,6 +103,24 @@ SELECT 'AI & Innovation Club', 'Technology', 'Innovation Lab Advisor', 'ai.club@
        'Runs AI workshops, project showcases, and innovation meetups for club members.', 'assets/images/club_logo.svg'
 WHERE NOT EXISTS (
     SELECT 1 FROM clubs WHERE name = 'AI & Innovation Club'
+);
+
+INSERT INTO club_admins (club_id, name, email, password)
+SELECT c.club_id, 'Programming Club Admin', 'programming.admin@club.edu',
+       '$2y$10$tTSd18ATcarfpkddMikPte6e3GGTfttYKt7RJlRsv.nOphzRqaroy'
+FROM clubs c
+WHERE c.name = 'Computer Programming Club'
+AND NOT EXISTS (
+    SELECT 1 FROM club_admins WHERE email = 'programming.admin@club.edu'
+);
+
+INSERT INTO club_admins (club_id, name, email, password)
+SELECT c.club_id, 'AI Club Admin', 'ai.admin@club.edu',
+       '$2y$10$tTSd18ATcarfpkddMikPte6e3GGTfttYKt7RJlRsv.nOphzRqaroy'
+FROM clubs c
+WHERE c.name = 'AI & Innovation Club'
+AND NOT EXISTS (
+    SELECT 1 FROM club_admins WHERE email = 'ai.admin@club.edu'
 );
 
 INSERT INTO events (club_id, title, description, image_path, category, event_date, event_time, registration_deadline, venue, capacity, created_by)

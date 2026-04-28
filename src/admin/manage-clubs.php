@@ -54,8 +54,62 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         }
 
         $stmt->close();
+    } elseif ($action === 'create_club_admin') {
+        $clubId = (int) ($_POST['club_id'] ?? 0);
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        if ($clubId < 1 || $name === '' || !isValidEmail($email) || strlen($password) < 6) {
+            $message = 'Club, name, valid email, and 6+ character password are required.';
+            $messageType = 'error';
+        } else {
+            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $conn->prepare(
+                'INSERT INTO club_admins (club_id, name, email, password)
+                 VALUES (?, ?, ?, ?)'
+            );
+            $stmt->bind_param('isss', $clubId, $name, $email, $passwordHash);
+
+            if ($stmt->execute()) {
+                $message = 'Club admin account created.';
+            } else {
+                $message = 'Could not create club admin. Email may already exist.';
+                $messageType = 'error';
+            }
+
+            $stmt->close();
+        }
+    } elseif ($action === 'update_club_admin_status') {
+        $clubAdminId = (int) ($_POST['club_admin_id'] ?? 0);
+        $status = $_POST['status'] === 'inactive' ? 'inactive' : 'active';
+        $stmt = $conn->prepare('UPDATE club_admins SET status = ? WHERE club_admin_id = ?');
+        $stmt->bind_param('si', $status, $clubAdminId);
+
+        if ($stmt->execute()) {
+            $message = 'Club admin status updated.';
+        } else {
+            $message = 'Could not update club admin status.';
+            $messageType = 'error';
+        }
+
+        $stmt->close();
     }
 }
+
+$clubOptions = $conn->query(
+    'SELECT club_id, name
+     FROM clubs
+     WHERE status = "active"
+     ORDER BY name ASC'
+);
+
+$clubAdmins = $conn->query(
+    'SELECT ca.club_admin_id, ca.name, ca.email, ca.status, ca.created_at, c.name AS club_name
+     FROM club_admins ca
+     INNER JOIN clubs c ON c.club_id = ca.club_id
+     ORDER BY c.name ASC, ca.name ASC'
+);
 
 $clubs = $conn->query(
     'SELECT c.club_id, c.name, c.category, c.advisor_name, c.advisor_email, c.description, c.logo_path, c.status,
@@ -158,18 +212,84 @@ $clubs = $conn->query(
 
                 <section class="panel">
                     <div class="section-head">
-                        <h2>Club Essentials</h2>
-                        <p class="muted">A complete club profile should include purpose, advisor, category, active status, and event history.</p>
+                        <h2>Create Club Admin</h2>
+                        <p class="muted">Assign an account that can manage only one club's events and members.</p>
                     </div>
-                    <div class="feature-list">
-                        <span>Official club profile</span>
-                        <span>Advisor contact</span>
-                        <span>Active/inactive status</span>
-                        <span>Club-wise events</span>
-                        <span>Registration activity</span>
-                    </div>
+                    <form method="post" class="stack-form">
+                        <?= csrfField(); ?>
+                        <input type="hidden" name="action" value="create_club_admin">
+                        <label>
+                            <span>Club</span>
+                            <select name="club_id" required>
+                                <option value="">Select club</option>
+                                <?php if ($clubOptions): ?>
+                                    <?php while ($clubOption = $clubOptions->fetch_assoc()): ?>
+                                        <option value="<?= e((string) $clubOption['club_id']); ?>"><?= e($clubOption['name']); ?></option>
+                                    <?php endwhile; ?>
+                                <?php endif; ?>
+                            </select>
+                        </label>
+                        <label>
+                            <span>Admin Name</span>
+                            <input type="text" name="name" placeholder="Club Executive" required>
+                        </label>
+                        <label>
+                            <span>Email</span>
+                            <input type="email" name="email" placeholder="club.admin@university.edu" required>
+                        </label>
+                        <label>
+                            <span>Password</span>
+                            <input type="password" name="password" placeholder="Minimum 6 characters" required>
+                        </label>
+                        <button type="submit">Create Club Admin</button>
+                    </form>
                 </section>
             </div>
+
+            <section class="panel">
+                <div class="section-head">
+                    <h2>Club Admin Accounts</h2>
+                    <p class="muted">Control who can access each club-specific panel.</p>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Club</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!$clubAdmins || $clubAdmins->num_rows === 0): ?>
+                                <tr><td colspan="5">No club admin accounts found.</td></tr>
+                            <?php else: ?>
+                                <?php while ($clubAdmin = $clubAdmins->fetch_assoc()): ?>
+                                    <tr>
+                                        <td><?= e($clubAdmin['name']); ?></td>
+                                        <td><?= e($clubAdmin['email']); ?></td>
+                                        <td><?= e($clubAdmin['club_name']); ?></td>
+                                        <td><span class="status-badge status-<?= $clubAdmin['status'] === 'active' ? 'success' : 'rejected'; ?>"><?= e(ucfirst($clubAdmin['status'])); ?></span></td>
+                                        <td>
+                                            <form method="post">
+                                                <?= csrfField(); ?>
+                                                <input type="hidden" name="action" value="update_club_admin_status">
+                                                <input type="hidden" name="club_admin_id" value="<?= e((string) $clubAdmin['club_admin_id']); ?>">
+                                                <input type="hidden" name="status" value="<?= $clubAdmin['status'] === 'active' ? 'inactive' : 'active'; ?>">
+                                                <button type="submit" class="small-btn <?= $clubAdmin['status'] === 'active' ? 'danger-btn' : ''; ?>">
+                                                    <?= $clubAdmin['status'] === 'active' ? 'Deactivate' : 'Activate'; ?>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endwhile; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
             <section class="panel">
                 <div class="section-head">

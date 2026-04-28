@@ -55,11 +55,39 @@ $conn->query(
     )"
 );
 
+$conn->query(
+    "CREATE TABLE IF NOT EXISTS club_admins (
+        club_admin_id INT AUTO_INCREMENT PRIMARY KEY,
+        club_id INT NOT NULL,
+        name VARCHAR(120) NOT NULL,
+        email VARCHAR(120) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        status ENUM('active', 'inactive') DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_club_admins_club (club_id)
+    )"
+);
+
+$conn->query(
+    "CREATE TABLE IF NOT EXISTS club_memberships (
+        membership_id INT AUTO_INCREMENT PRIMARY KEY,
+        student_id INT NOT NULL,
+        club_id INT NOT NULL,
+        status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+        requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        decided_at TIMESTAMP NULL DEFAULT NULL,
+        UNIQUE KEY uq_student_club (student_id, club_id),
+        INDEX idx_club_memberships_club (club_id),
+        INDEX idx_club_memberships_student (student_id)
+    )"
+);
+
 ensureColumn($conn, $dbName, 'events', 'image_path', 'VARCHAR(255) DEFAULT NULL AFTER description');
 ensureColumn($conn, $dbName, 'events', 'club_id', 'INT DEFAULT NULL AFTER event_id');
 ensureColumn($conn, $dbName, 'events', 'category', "VARCHAR(80) DEFAULT 'General' AFTER image_path");
 ensureColumn($conn, $dbName, 'events', 'event_time', 'TIME DEFAULT NULL AFTER event_date');
 ensureColumn($conn, $dbName, 'events', 'registration_deadline', 'DATE DEFAULT NULL AFTER event_time');
+ensureColumn($conn, $dbName, 'events', 'created_by_club_admin', 'INT DEFAULT NULL AFTER created_by');
 
 $conn->query(
     "INSERT INTO clubs (name, category, advisor_name, advisor_email, description)
@@ -72,6 +100,23 @@ $conn->query(
      SELECT 'AI & Innovation Club', 'Technology', 'Innovation Lab Advisor', 'ai.club@university.edu',
             'Runs AI workshops, project showcases, and innovation meetups for club members.'
      WHERE NOT EXISTS (SELECT 1 FROM clubs WHERE name = 'AI & Innovation Club')"
+);
+
+$conn->query(
+    "INSERT INTO club_admins (club_id, name, email, password)
+     SELECT c.club_id, 'Programming Club Admin', 'programming.admin@club.edu',
+            '$2y$10$tTSd18ATcarfpkddMikPte6e3GGTfttYKt7RJlRsv.nOphzRqaroy'
+     FROM clubs c
+     WHERE c.name = 'Computer Programming Club'
+       AND NOT EXISTS (SELECT 1 FROM club_admins WHERE email = 'programming.admin@club.edu')"
+);
+$conn->query(
+    "INSERT INTO club_admins (club_id, name, email, password)
+     SELECT c.club_id, 'AI Club Admin', 'ai.admin@club.edu',
+            '$2y$10$tTSd18ATcarfpkddMikPte6e3GGTfttYKt7RJlRsv.nOphzRqaroy'
+     FROM clubs c
+     WHERE c.name = 'AI & Innovation Club'
+       AND NOT EXISTS (SELECT 1 FROM club_admins WHERE email = 'ai.admin@club.edu')"
 );
 
 $conn->query(
@@ -97,6 +142,11 @@ function isAdminLoggedIn(): bool
     return isset($_SESSION['admin_id']);
 }
 
+function isClubAdminLoggedIn(): bool
+{
+    return isset($_SESSION['club_admin_id'], $_SESSION['club_admin_club_id']);
+}
+
 function requireStudentAuth(): void
 {
     if (!isStudentLoggedIn()) {
@@ -109,6 +159,14 @@ function requireAdminAuth(): void
 {
     if (!isAdminLoggedIn()) {
         header('Location: admin-login.php');
+        exit;
+    }
+}
+
+function requireClubAdminAuth(): void
+{
+    if (!isClubAdminLoggedIn()) {
+        header('Location: login.php');
         exit;
     }
 }

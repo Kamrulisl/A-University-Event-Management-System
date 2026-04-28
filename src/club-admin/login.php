@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../backend/db.php';
 
-if (isStudentLoggedIn()) {
+if (isClubAdminLoggedIn()) {
     header('Location: dashboard.php');
     exit;
 }
@@ -18,24 +18,30 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     } elseif (!isValidEmail($email)) {
         $message = 'Please enter a valid email address.';
     } else {
-        $stmt = $conn->prepare('SELECT student_id, name, email, password FROM students WHERE email = ? LIMIT 1');
+        $stmt = $conn->prepare(
+            'SELECT ca.club_admin_id, ca.club_id, ca.name, ca.email, ca.password, ca.status, c.name AS club_name
+             FROM club_admins ca
+             INNER JOIN clubs c ON c.club_id = ca.club_id
+             WHERE ca.email = ? LIMIT 1'
+        );
         $stmt->bind_param('s', $email);
         $stmt->execute();
-        $result = $stmt->get_result();
-        $student = $result->fetch_assoc();
+        $clubAdmin = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
-        if ($student && password_verify($password, $student['password'])) {
+        if ($clubAdmin && $clubAdmin['status'] === 'active' && password_verify($password, $clubAdmin['password'])) {
             session_regenerate_id(true);
-            $_SESSION['student_id'] = (int) $student['student_id'];
-            $_SESSION['student_name'] = $student['name'];
-            $_SESSION['student_email'] = $student['email'];
+            $_SESSION['club_admin_id'] = (int) $clubAdmin['club_admin_id'];
+            $_SESSION['club_admin_club_id'] = (int) $clubAdmin['club_id'];
+            $_SESSION['club_admin_name'] = $clubAdmin['name'];
+            $_SESSION['club_admin_email'] = $clubAdmin['email'];
+            $_SESSION['club_admin_club_name'] = $clubAdmin['club_name'];
 
             header('Location: dashboard.php');
             exit;
         }
 
-        $message = 'Invalid email or password.';
+        $message = 'Invalid club admin credentials or inactive account.';
     }
 }
 ?>
@@ -44,8 +50,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Member Login | University Club Event Management</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Club Admin Login | University Club Event Management</title>
+    <link rel="stylesheet" href="../student/style.css">
 </head>
 <body class="auth-page">
     <main class="auth-shell">
@@ -53,23 +59,23 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             <div class="brand-lockup">
                 <img src="../assets/images/puc_logo.png" alt="PUC Logo" class="brand-logo large-logo">
                 <div>
-                    <p class="eyebrow">Member Portal</p>
-                    <h1>University Club Event Management</h1>
+                    <p class="eyebrow">Club Admin Panel</p>
+                    <h1>Manage your club, events, members, and approvals.</h1>
                 </div>
             </div>
-            <p>Discover club events, request seats, follow approvals, and keep your participation history in one place.</p>
+            <p>Club admins can publish events for their own club, review event registrations, approve club memberships, and keep club profile information updated.</p>
             <div class="auth-benefits">
-                <span>Live event catalog</span>
-                <span>Seat tracking</span>
-                <span>Approval updates</span>
+                <span>Club events</span>
+                <span>Member approvals</span>
+                <span>Participant control</span>
             </div>
         </section>
 
         <section class="auth-card">
             <div class="brand-block">
-                <p class="eyebrow">Welcome Back</p>
-                <h2>Member Login</h2>
-                <p class="muted">Sign in to browse club events and manage your registration requests.</p>
+                <p class="eyebrow">Club Workspace</p>
+                <h2>Club Admin Login</h2>
+                <p class="muted">Default demo: programming.admin@club.edu / club12345</p>
             </div>
 
             <?php if ($message !== ''): ?>
@@ -80,7 +86,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 <?= csrfField(); ?>
                 <label>
                     <span>Email Address</span>
-                    <input type="email" name="email" placeholder="member@club.edu" autocomplete="email" required>
+                    <input type="email" name="email" placeholder="programming.admin@club.edu" autocomplete="email" required>
                 </label>
 
                 <label>
@@ -88,14 +94,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     <input type="password" name="password" placeholder="Enter password" autocomplete="current-password" required>
                 </label>
 
-                <button type="submit">Login to Portal</button>
+                <button type="submit">Open Club Panel</button>
             </form>
 
             <div class="auth-links">
-                <span>New member? <a href="register.php">Create account</a></span>
+                <span><a href="../student/login.php">Member login</a></span>
+                <span><a href="../admin/admin-login.php">Super admin login</a></span>
                 <span><a href="../index.php">Back to website</a></span>
-                <span><a href="../club-admin/login.php">Club admin login</a></span>
-                <span><a href="../admin/admin-login.php">Admin login</a></span>
             </div>
         </section>
     </main>

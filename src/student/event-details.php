@@ -111,6 +111,7 @@ $isDeadlineOpen = $event ? registrationDeadlineOpen($event['registration_deadlin
             <div>
                 <nav class="nav-links">
                     <a href="dashboard.php">Dashboard</a>
+                    <a href="my-clubs.php">My Clubs</a>
                     <a href="my-events.php">My Events</a>
                     <a href="profile.php">Profile Settings</a>
                     <a href="../index.php">Home</a>
